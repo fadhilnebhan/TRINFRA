@@ -30,11 +30,11 @@ yarn-error.log*
 .env*.local
 !.env.example
 
-# SQLite database
-prisma/*.db
+# SQLite database (track dev.db for zero-budget deployment demo)
 prisma/*.db-journal
 prisma/*.db-wal
 prisma/*.db-shm
+
 
 # storage uploads
 storage/documents/*

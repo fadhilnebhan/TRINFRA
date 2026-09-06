@@ -6,6 +6,8 @@ import { getAuthenticatedAdmin } from '@/lib/auth';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'storage', 'documents');
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const admin = await getAuthenticatedAdmin();
   if (!admin) {

@@ -3,6 +3,8 @@ import fs from 'fs';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedAdmin } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
