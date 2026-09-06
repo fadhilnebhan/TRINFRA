@@ -1,0 +1,3 @@
+# Private Local Document Storage for TRINFRA (Demo)
+# Files in this directory are never served statically.
+# They are only accessible via authenticated admin streaming endpoints.

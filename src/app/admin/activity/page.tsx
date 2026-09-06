@@ -1,0 +1,98 @@
+'use client';
+
+import Link from 'next/link';
+import { ArrowLeft, Activity, FileText, Building2, ShieldCheck } from 'lucide-react';
+import { getActivities, ActivityItem } from '@/lib/adminData';
+
+export default function AdminActivityPage() {
+  const activities = getActivities();
+
+  const getActivityIcon = (type: ActivityItem['type']) => {
+    switch (type) {
+      case 'registration_received':
+        return {
+          icon: FileText,
+          bg: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+        };
+      case 'enquiry_received':
+        return {
+          icon: Building2,
+          bg: 'bg-amber-50 text-amber-700 border-amber-100',
+        };
+      case 'verification_updated':
+      case 'status_changed':
+        return {
+          icon: ShieldCheck,
+          bg: 'bg-[#0E2115]/10 text-primary border-[#0E2115]/20',
+        };
+      default:
+        return {
+          icon: Activity,
+          bg: 'bg-gray-100 text-gray-700 border-gray-200',
+        };
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <div>
+        <Link
+          href="/admin"
+          className="inline-flex items-center gap-2 text-[13px] font-semibold text-gray-500 hover:text-primary transition-colors"
+        >
+          <ArrowLeft size={16} /> Back to Overview
+        </Link>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-[26px] md:text-[30px] font-heading font-extrabold text-foreground tracking-tight">
+            Activity Log
+          </h1>
+          <p className="text-[14px] text-gray-500 mt-0.5">
+            Audit trail of system events, registrations, and staff actions.
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[16px] p-6 border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-4">
+        <h3 className="font-bold text-[15px] text-foreground border-b border-gray-100 pb-3">
+          Chronological Event Stream
+        </h3>
+
+        <div className="divide-y divide-gray-100">
+          {activities.map((act) => {
+            const { icon: Icon, bg } = getActivityIcon(act.type);
+
+            return (
+              <div
+                key={act.id}
+                className="py-3.5 flex items-start justify-between gap-4"
+              >
+                <div className="flex items-start gap-3.5">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0 mt-0.5 ${bg}`}
+                  >
+                    <Icon size={16} />
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-bold text-foreground">
+                      {act.title}
+                    </p>
+                    <p className="text-[12px] font-mono text-gray-400 mt-0.5">
+                      {act.reference} {act.details && `• ${act.details}`}
+                    </p>
+                  </div>
+                </div>
+
+                <span className="text-[12px] text-gray-400 shrink-0">
+                  {act.relativeTime}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}

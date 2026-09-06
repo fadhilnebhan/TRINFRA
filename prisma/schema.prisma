@@ -1,0 +1,192 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  fullName     String
+  role         String      @default("ADMIN") // ADMIN | SUPERADMIN | REVIEWER
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  adminNotes   AdminNote[]
+}
+
+model Landowner {
+  id                     String      @id @default(cuid())
+  referenceNumber        String      @unique // e.g. TRI-2026-00001
+  ownerType              String      @default("Individual") // Individual | Family | Group
+  fullName               String
+  email                  String
+  phone                  String
+  alternatePhone         String?
+  preferredCommunication String      @default("WhatsApp") // WhatsApp | Phone Call | Email
+  district               String
+  localBody              String
+  locality               String
+  address                String?
+  approximateArea        Float       @default(0)
+  areaUnit               String      @default("Acres") // Acres | Cents | Hectares
+  ownershipStatus        String      @default("Sole Ownership") // Sole Ownership | Joint Ownership | Family Inherited | Community
+  poolingInterest        String      @default("Join Existing Pool") // Join Existing Pool | Initiate New Pool | Explore Options
+  verificationStatus     String      @default("NEW") // NEW | VERIFICATION_PENDING | VERIFIED | NEEDS_CLARIFICATION | REJECTED
+  notes                  String?
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+
+  parcels    LandParcel[]
+  documents  Document[]
+  adminNotes AdminNote[]
+}
+
+model LandParcel {
+  id              String       @id @default(cuid())
+  landownerId     String
+  landowner       Landowner    @relation(fields: [landownerId], references: [id], onDelete: Cascade)
+  surveyNumber    String?
+  district        String
+  localBody       String
+  locality        String
+  approximateArea Float
+  areaUnit        String       @default("Acres")
+  latitude        Float?
+  longitude       Float?
+  ownershipStatus String?
+  opportunityId   String?
+  opportunity     Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  documents Document[]
+}
+
+model Opportunity {
+  id                   String             @id @default(cuid()) // e.g. OPP-1
+  title                String
+  slug                 String             @unique
+  location             String
+  district             String
+  locality             String
+  area                 Float
+  areaUnit             String             @default("Acres")
+  landownersCount      Int                @default(1)
+  status               String             @default("OPEN") // OPEN | IN_PROGRESS | FORMING | UNDER_REVIEW | CLOSED
+  shortDescription     String
+  overview             String
+  highlights           String? // JSON array string
+  developmentPotential String?
+  currentStatusDetail  String?
+  image                String
+  latitude             Float?
+  longitude            Float?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  parcels    LandParcel[]
+  projects   Project[]
+  enquiries  DeveloperEnquiry[]
+  adminNotes AdminNote[]
+}
+
+model Project {
+  id                      String             @id @default(cuid()) // e.g. PROJ-1
+  title                   String
+  slug                    String             @unique
+  location                String
+  district                String
+  approximateArea         String
+  areaNum                 Float
+  participatingLandowners Int                @default(1)
+  status                  String             @default("PLANNING") // PLANNING | IN_PROGRESS | DEVELOPMENT | COMPLETED
+  developmentStage        String             @default("PLANNING") // LAND_AGGREGATION | PLANNING | APPROVALS | DEVELOPMENT | COMPLETED
+  progressPercentage      Int                @default(0)
+  image                   String
+  description             String
+  overview                String
+  tags                    String? // JSON array string
+  featured                Boolean            @default(false)
+  opportunityId           String?
+  opportunity             Opportunity?       @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  enquiries  DeveloperEnquiry[]
+  adminNotes AdminNote[]
+}
+
+model DeveloperEnquiry {
+  id                     String       @id @default(cuid())
+  referenceNumber        String       @unique // e.g. TRI-ENQ-2026-00001
+  fullName               String
+  company                String
+  email                  String
+  phone                  String
+  preferredContactMethod String?      @default("Phone")
+  role                   String       @default("developer") // developer | investor | other
+  interestType           String?      @default("request_info") // request_info | explore_partnership | schedule_discussion | not_sure
+  investmentRange        String?
+  preferredLocation      String?
+  message                String
+  opportunityId          String?
+  opportunity            Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  projectId              String?
+  project                Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  status                 String       @default("NEW") // NEW | CONTACTED | QUALIFIED | FOLLOW_UP | CLOSED | REJECTED
+  priority               String       @default("NORMAL") // LOW | NORMAL | HIGH
+  internalNotes          String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  adminNotes AdminNote[]
+}
+
+model Document {
+  id                 String      @id @default(cuid())
+  landownerId        String?
+  landowner          Landowner?  @relation(fields: [landownerId], references: [id], onDelete: Cascade)
+  landParcelId       String?
+  landParcel         LandParcel? @relation(fields: [landParcelId], references: [id], onDelete: Cascade)
+  documentType       String      @default("OWNERSHIP") // IDENTITY | OWNERSHIP | LAND_RECORD | SURVEY | OTHER
+  fileName           String
+  filePath           String // Local filesystem path (never public)
+  mimeType           String
+  fileSize           Int
+  verificationStatus String      @default("PENDING_REVIEW") // PENDING_REVIEW | VERIFIED | FLAGGED
+  uploadedAt         DateTime    @default(now())
+}
+
+model AdminNote {
+  id            String            @id @default(cuid())
+  adminId       String?
+  admin         User?             @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  authorName    String            @default("Admin Reviewer")
+  authorRole    String            @default("Lead Coordinator")
+  landownerId   String?
+  landowner     Landowner?        @relation(fields: [landownerId], references: [id], onDelete: Cascade)
+  enquiryId     String?
+  enquiry       DeveloperEnquiry? @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  opportunityId String?
+  opportunity   Opportunity?      @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  content       String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        String // registration_received | enquiry_received | verification_updated | system
+  title       String
+  message     String
+  recipientId String?
+  reference   String?
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
