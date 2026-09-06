@@ -711,64 +711,64 @@ export default function AboutPageView() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.6 }}
-            className="bg-white rounded-[24px] border border-gray-100 shadow-2xl shadow-black/5 py-12 px-6 sm:px-10"
+            className="bg-white rounded-[24px] border border-gray-100 shadow-2xl shadow-black/5 py-8 sm:py-12 px-4 sm:px-8 md:px-10"
           >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-y-10 divide-x-0 md:divide-x divide-gray-100">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-y-10 divide-x-0 lg:divide-x divide-gray-100">
               {/* Stat 1 */}
-              <div className="flex items-center justify-center gap-5 px-4">
-                <div className="shrink-0 text-accent">
-                  <Users size={44} strokeWidth={1.5} />
+              <div className="flex flex-col sm:flex-row items-center sm:items-start lg:items-center justify-center text-center sm:text-left gap-2 sm:gap-4 lg:gap-5 px-2 sm:px-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 shrink-0 text-accent flex items-center justify-center">
+                  <Users className="w-full h-full" strokeWidth={1.5} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[36px] sm:text-[44px] font-heading font-bold text-foreground leading-tight tracking-tight">
+                  <span className="text-[26px] sm:text-[34px] md:text-[42px] font-heading font-bold text-foreground leading-none tracking-tight">
                     <CountUpItem to={500} suffix="+" />
                   </span>
-                  <span className="text-xs sm:text-[14px] text-gray-500 font-medium">
+                  <span className="text-[11px] sm:text-[13px] md:text-[14px] text-gray-500 font-medium leading-snug mt-1">
                     Landowners Onboarded
                   </span>
                 </div>
               </div>
 
               {/* Stat 2 */}
-              <div className="flex items-center justify-center gap-5 px-4">
-                <div className="shrink-0 text-accent">
-                  <MapIcon size={44} strokeWidth={1.5} />
+              <div className="flex flex-col sm:flex-row items-center sm:items-start lg:items-center justify-center text-center sm:text-left gap-2 sm:gap-4 lg:gap-5 px-2 sm:px-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 shrink-0 text-accent flex items-center justify-center">
+                  <MapIcon className="w-full h-full" strokeWidth={1.5} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[36px] sm:text-[44px] font-heading font-bold text-foreground leading-tight tracking-tight">
+                  <span className="text-[26px] sm:text-[34px] md:text-[42px] font-heading font-bold text-foreground leading-none tracking-tight">
                     <CountUpItem to={12} suffix="+" />
                   </span>
-                  <span className="text-xs sm:text-[14px] text-gray-500 font-medium">
+                  <span className="text-[11px] sm:text-[13px] md:text-[14px] text-gray-500 font-medium leading-snug mt-1">
                     Emerging Opportunities
                   </span>
                 </div>
               </div>
 
               {/* Stat 3 */}
-              <div className="flex items-center justify-center gap-5 px-4">
-                <div className="shrink-0 text-accent">
-                  <Layers size={44} strokeWidth={1.5} />
+              <div className="flex flex-col sm:flex-row items-center sm:items-start lg:items-center justify-center text-center sm:text-left gap-2 sm:gap-4 lg:gap-5 px-2 sm:px-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 shrink-0 text-accent flex items-center justify-center">
+                  <Layers className="w-full h-full" strokeWidth={1.5} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[36px] sm:text-[44px] font-heading font-bold text-foreground leading-tight tracking-tight">
+                  <span className="text-[26px] sm:text-[34px] md:text-[42px] font-heading font-bold text-foreground leading-none tracking-tight">
                     <CountUpItem to={2500} suffix="+" />
                   </span>
-                  <span className="text-xs sm:text-[14px] text-gray-500 font-medium">
+                  <span className="text-[11px] sm:text-[13px] md:text-[14px] text-gray-500 font-medium leading-snug mt-1">
                     Acres Under Facilitation
                   </span>
                 </div>
               </div>
 
               {/* Stat 4 */}
-              <div className="flex items-center justify-center gap-5 px-4">
-                <div className="shrink-0 text-accent">
-                  <Handshake size={44} strokeWidth={1.5} />
+              <div className="flex flex-col sm:flex-row items-center sm:items-start lg:items-center justify-center text-center sm:text-left gap-2 sm:gap-4 lg:gap-5 px-2 sm:px-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 shrink-0 text-accent flex items-center justify-center">
+                  <Handshake className="w-full h-full" strokeWidth={1.5} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[36px] sm:text-[44px] font-heading font-bold text-foreground leading-tight tracking-tight">
+                  <span className="text-[26px] sm:text-[34px] md:text-[42px] font-heading font-bold text-foreground leading-none tracking-tight">
                     <CountUpItem to={25} suffix="+" />
                   </span>
-                  <span className="text-xs sm:text-[14px] text-gray-500 font-medium">
+                  <span className="text-[11px] sm:text-[13px] md:text-[14px] text-gray-500 font-medium leading-snug mt-1">
                     Professional Partners
                   </span>
                 </div>
@@ -886,17 +886,17 @@ export default function AboutPageView() {
             Connect land, expertise and opportunity to create meaningful development for the future.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto w-full">
             <Link
               href="/register"
-              className="w-full sm:w-auto bg-accent text-[#0E2115] hover:bg-[#a88243] hover:text-white px-8 py-4 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group shadow-xl text-sm"
+              className="w-full sm:w-auto bg-accent text-[#0E2115] hover:bg-[#a88243] hover:text-white px-8 py-4 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group shadow-xl text-sm text-center"
             >
               Register Your Land
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/opportunities"
-              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/25 px-8 py-4 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group backdrop-blur-sm text-sm"
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/25 px-8 py-4 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group backdrop-blur-sm text-sm text-center"
             >
               Explore Opportunities
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform text-accent" />

@@ -2,9 +2,9 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="bg-[#050B07] pt-20 pb-10">
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+    <footer className="bg-[#050B07] pt-16 md:pt-20 pb-10">
+      <div className="max-w-[1360px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10 lg:gap-12 mb-12 sm:mb-16">
           
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-6">

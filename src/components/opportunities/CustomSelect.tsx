@@ -238,10 +238,10 @@ export default function CustomSelect({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.99 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className={`absolute top-[calc(100%+4px)] z-50 bg-white rounded-xl border border-gray-200/90 shadow-[0_12px_32px_-4px_rgba(0,0,0,0.12),0_4px_12px_-2px_rgba(0,0,0,0.06)] overflow-hidden ${
+            className={`absolute top-[calc(100%+4px)] z-50 bg-white rounded-xl border border-gray-200/90 shadow-[0_12px_32px_-4px_rgba(0,0,0,0.12),0_4px_12px_-2px_rgba(0,0,0,0.06)] overflow-hidden max-w-[calc(100vw-32px)] ${
               align === 'right'
-                ? 'right-0 left-auto min-w-[170px]'
-                : 'left-0 right-0 w-full min-w-[200px]'
+                ? 'right-0 left-auto min-w-[150px] sm:min-w-[170px]'
+                : 'left-0 right-0 w-full min-w-full sm:min-w-[200px]'
             } ${isSmall ? 'text-[13px]' : 'text-[14px]'}`}
           >
             <ul

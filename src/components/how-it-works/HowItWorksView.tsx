@@ -222,18 +222,18 @@ export default function HowItWorksView() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto w-full"
           >
             <Link
               href="/register"
-              className="w-full sm:w-auto bg-accent text-[#0E2115] hover:bg-[#a88243] hover:text-white px-8 py-3.5 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group shadow-xl"
+              className="w-full sm:w-auto bg-accent text-[#0E2115] hover:bg-[#a88243] hover:text-white px-8 py-3.5 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group shadow-xl text-center"
             >
               Register Your Land
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/opportunities"
-              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/25 px-8 py-3.5 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group backdrop-blur-sm"
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/25 px-8 py-3.5 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group backdrop-blur-sm text-center"
             >
               Explore Opportunities
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform text-accent" />
@@ -950,17 +950,17 @@ export default function HowItWorksView() {
             Whether you&apos;re a landowner, developer or investor, TRINFRA helps connect the right people and opportunities.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto w-full">
             <Link
               href="/register"
-              className="w-full sm:w-auto bg-accent text-[#0E2115] hover:bg-[#a88243] hover:text-white px-8 py-4 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group shadow-xl text-sm"
+              className="w-full sm:w-auto bg-accent text-[#0E2115] hover:bg-[#a88243] hover:text-white px-8 py-4 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group shadow-xl text-sm text-center"
             >
               Register Your Land
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/opportunities"
-              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/25 px-8 py-4 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group backdrop-blur-sm text-sm"
+              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/25 px-8 py-4 rounded font-bold transition-all inline-flex items-center justify-center gap-2 group backdrop-blur-sm text-sm text-center"
             >
               Explore Opportunities
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform text-accent" />

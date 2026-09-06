@@ -27,12 +27,12 @@ export default function TrustVerification() {
   ];
 
   return (
-    <section className="py-12 bg-background border-b border-gray-200">
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16">
-        <div className="text-center mb-12">
-          <h2 className="text-[36px] font-heading font-bold text-foreground inline-block relative">
+    <section className="py-12 md:py-16 bg-background border-b border-gray-200">
+      <div className="max-w-[1360px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16">
+        <div className="text-center mb-10 md:mb-12">
+          <h2 className="text-[26px] sm:text-[32px] md:text-[36px] font-heading font-bold text-foreground inline-block relative">
             Built on Trust & a Strong Ecosystem
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-20 h-[4px] bg-accent"></div>
+            <div className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 w-16 sm:w-20 h-[3px] sm:h-[4px] bg-accent"></div>
           </h2>
         </div>
 

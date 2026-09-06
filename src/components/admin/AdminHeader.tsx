@@ -138,7 +138,7 @@ export default function AdminHeader({
       </div>
 
       {/* Center: Search input */}
-      <div className="flex-1 max-w-[420px] mx-4">
+      <div className="flex-1 max-w-[420px] mx-2 sm:mx-4">
         <div className="relative">
           <Search
             size={16}
@@ -148,7 +148,7 @@ export default function AdminHeader({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Quick search across modules..."
+            placeholder="Search..."
             className="w-full bg-[#F8F9FA] hover:bg-gray-100 focus:bg-white border border-gray-200 focus:border-primary/40 focus:ring-2 focus:ring-primary/10 rounded-full pl-9 pr-4 py-2 text-[13px] text-foreground placeholder:text-gray-400 transition-all outline-none"
           />
           {searchQuery && (
@@ -163,7 +163,7 @@ export default function AdminHeader({
       </div>
 
       {/* Right: Notifications & Profile */}
-      <div className="flex items-center gap-2 md:gap-3.5">
+      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3.5 shrink-0">
         {/* Notifications Icon & Popover */}
         <div className="relative">
           <button
@@ -185,7 +185,7 @@ export default function AdminHeader({
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-84 sm:w-96 bg-white rounded-2xl border border-gray-200/90 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.12)] p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute right-0 mt-2 w-[calc(100vw-32px)] sm:w-96 max-w-sm bg-white rounded-2xl border border-gray-200/90 shadow-[0_12px_36px_-4px_rgba(0,0,0,0.12)] p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
               <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-[14px] font-bold text-foreground">

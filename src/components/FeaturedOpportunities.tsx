@@ -32,14 +32,14 @@ const opportunities = [
 
 export default function FeaturedOpportunities() {
   return (
-    <section id="opportunities" className="py-12 pb-24 bg-background">
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16">
+    <section id="opportunities" className="py-12 pb-20 md:pb-24 bg-background">
+      <div className="max-w-[1360px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16">
         
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 sm:mb-12 gap-4 sm:gap-6">
           <div>
-            <h2 className="text-[36px] md:text-[46px] font-heading font-bold text-foreground mb-4">Featured Opportunities</h2>
+            <h2 className="text-[28px] sm:text-[36px] md:text-[46px] font-heading font-bold text-foreground mb-2 sm:mb-4">Featured Opportunities</h2>
           </div>
-          <Link href="/opportunities" className="text-foreground font-semibold hover:text-accent transition-colors flex items-center gap-2 group text-[15px] tracking-wide mb-2">
+          <Link href="/opportunities" className="text-foreground font-semibold hover:text-accent transition-colors flex items-center gap-2 group text-[14px] sm:text-[15px] tracking-wide mb-2">
             View all opportunities
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </Link>
@@ -93,7 +93,7 @@ export default function FeaturedOpportunities() {
           </div>
 
           {/* Map CTA Column */}
-          <div className="lg:col-span-5 bg-[#0A1810] rounded-[24px] overflow-hidden relative flex flex-col items-center justify-center p-12 text-center border border-[#163321] group min-h-[400px]">
+          <div className="lg:col-span-5 bg-[#0A1810] rounded-[20px] sm:rounded-[24px] overflow-hidden relative flex flex-col items-center justify-center p-6 sm:p-8 md:p-12 text-center border border-[#163321] group min-h-[350px] sm:min-h-[400px]">
             {/* Background Grid Pattern */}
             <div className="absolute inset-0 opacity-20 bg-[url('/images/farm_grid.jpeg')] bg-cover bg-center blend-overlay mix-blend-luminosity"></div>
             

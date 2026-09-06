@@ -36,14 +36,14 @@ const articles = [
 
 export default function KnowledgeCentre() {
   return (
-    <section id="knowledge" className="py-24 bg-background">
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="flex flex-col justify-center pr-4 mb-8 lg:mb-0">
-            <h2 className="text-[36px] md:text-[42px] font-heading font-bold text-foreground mb-4 leading-tight">
+    <section id="knowledge" className="py-16 md:py-24 bg-background">
+      <div className="max-w-[1360px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
+          <div className="flex flex-col justify-center sm:col-span-2 lg:col-span-1 pr-4 mb-4 lg:mb-0">
+            <h2 className="text-[28px] sm:text-[36px] md:text-[42px] font-heading font-bold text-foreground mb-3 sm:mb-4 leading-tight">
               Knowledge Centre
             </h2>
-            <p className="text-[16px] text-gray-600 mb-8 max-w-[220px] leading-relaxed">
+            <p className="text-[14px] sm:text-[16px] text-gray-600 mb-6 sm:mb-8 max-w-[280px] leading-relaxed">
               Insights, guides and updates on land pooling and development.
             </p>
             <Link

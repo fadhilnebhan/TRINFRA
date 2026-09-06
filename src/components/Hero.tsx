@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 export default function Hero() {
   return (
-    <section className="relative w-full min-h-[80vh] lg:min-h-[750px] flex flex-col pt-36 pb-20 overflow-hidden">
+    <section className="relative w-full min-h-[85vh] lg:min-h-[750px] flex flex-col pt-28 pb-12 sm:pt-32 sm:pb-16 lg:pt-36 lg:pb-20 overflow-hidden">
       {/* Background Image */}
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center"
@@ -15,8 +15,8 @@ export default function Hero() {
         }}
       />
       {/* Green/Dark Gradient Overlay */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0E2115]/95 via-[#0E2115]/80 to-transparent" />
-      <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0E2115] via-transparent to-black/30" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0E2115]/95 via-[#0E2115]/85 to-transparent" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0E2115] via-transparent to-black/40" />
 
       {/* Parcel Highlights */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-full z-0 opacity-80 pointer-events-none hidden lg:flex items-center justify-center translate-x-12">
@@ -47,32 +47,32 @@ export default function Hero() {
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16 w-full flex-grow flex flex-col justify-center">
+      <div className="relative z-10 max-w-[1360px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16 w-full flex-grow flex flex-col justify-center">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="max-w-[950px]"
         >
-          <div className="inline-flex items-center px-3 py-1.5 rounded-[4px] border border-[#4ADE80]/30 bg-black/40 mb-6">
-            <span className="text-[#4ADE80] text-[11px] font-bold tracking-[0.2em] uppercase">Land Together. Build Tomorrow.</span>
+          <div className="inline-flex items-center px-3 py-1.5 rounded-[4px] border border-[#4ADE80]/30 bg-black/40 mb-4 sm:mb-6">
+            <span className="text-[#4ADE80] text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase">Land Together. Build Tomorrow.</span>
           </div>
           
-          <h1 className="text-[44px] md:text-[54px] lg:text-[64px] font-heading font-bold leading-[1.05] tracking-tight mb-8">
-            <span className="text-white block lg:whitespace-nowrap">Bringing Land Together.</span>
-            <span className="text-accent block mt-1 lg:whitespace-nowrap">Building Bigger Opportunities.</span>
+          <h1 className="text-[32px] sm:text-[44px] md:text-[54px] lg:text-[64px] font-heading font-bold leading-[1.1] sm:leading-[1.05] tracking-tight mb-4 sm:mb-6">
+            <span className="text-white block">Bringing Land Together.</span>
+            <span className="text-accent block mt-1">Building Bigger Opportunities.</span>
           </h1>
           
-          <p className="text-[18px] text-white/90 max-w-[600px] leading-relaxed mb-12 font-normal">
+          <p className="text-[15px] sm:text-[17px] md:text-[18px] text-white/90 max-w-[600px] leading-relaxed mb-8 sm:mb-10 font-normal">
             Trinfra facilitates land pooling opportunities by connecting landowners, developers and experts to create impactful development for the future.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 mb-16">
-            <Link href="/register" className="bg-primary-btn border border-white/10 text-white px-8 py-3.5 rounded-md text-[15px] font-semibold hover:bg-[#07190e] transition-colors flex items-center justify-center gap-2 group shadow-lg">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-14">
+            <Link href="/register" className="w-full sm:w-auto bg-primary-btn border border-white/10 text-white px-7 sm:px-8 py-3.5 rounded-md text-[15px] font-semibold hover:bg-[#07190e] transition-colors flex items-center justify-center gap-2 group shadow-lg">
               Register Your Land
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/opportunities" className="bg-transparent border border-white/30 text-white px-8 py-3.5 rounded-md text-[15px] font-semibold hover:bg-white/5 transition-colors shadow-sm">
+            <Link href="/opportunities" className="w-full sm:w-auto bg-transparent border border-white/30 text-white px-7 sm:px-8 py-3.5 rounded-md text-[15px] font-semibold hover:bg-white/5 transition-colors shadow-sm text-center justify-center">
               Explore Opportunities
             </Link>
           </div>
@@ -80,20 +80,18 @@ export default function Hero() {
       </div>
 
       {/* Trust Strip */}
-      <div className="relative z-10 max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16 w-full mt-auto">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-8">
-          <div className="flex flex-wrap md:flex-nowrap items-center gap-x-8 gap-y-4">
+      <div className="relative z-10 max-w-[1360px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16 w-full mt-auto">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-4 border-t border-white/10 lg:border-t-0">
+          <div className="grid grid-cols-2 md:flex md:flex-nowrap items-start md:items-center gap-x-4 gap-y-3.5 sm:gap-x-8">
             {[
-              { icon: <CheckCircle2 size={20} className="text-accent" strokeWidth={2} />, text: "Trusted & Transparent" },
-              { icon: <ShieldCheck size={20} className="text-accent" strokeWidth={2} />, text: "Verified Process" },
-              { icon: <TrendingUp size={20} className="text-accent" strokeWidth={2} />, text: "Stronger Development Potential" },
-              { icon: <Handshake size={20} className="text-accent" strokeWidth={2} />, text: "Professional Ecosystem" },
+              { icon: <CheckCircle2 size={18} className="text-accent shrink-0" strokeWidth={2} />, text: "Trusted & Transparent" },
+              { icon: <ShieldCheck size={18} className="text-accent shrink-0" strokeWidth={2} />, text: "Verified Process" },
+              { icon: <TrendingUp size={18} className="text-accent shrink-0" strokeWidth={2} />, text: "Stronger Development Potential" },
+              { icon: <Handshake size={18} className="text-accent shrink-0" strokeWidth={2} />, text: "Professional Ecosystem" },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2.5">
-                <div className="shrink-0">
-                  {item.icon}
-                </div>
-                <span className="text-white text-[12px] font-medium leading-tight max-w-[120px]">{item.text}</span>
+              <div key={i} className="flex items-center gap-2 sm:gap-2.5">
+                {item.icon}
+                <span className="text-white text-[11px] sm:text-[12px] font-medium leading-tight max-w-[140px]">{item.text}</span>
               </div>
             ))}
           </div>

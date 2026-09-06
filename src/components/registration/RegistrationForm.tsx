@@ -433,7 +433,7 @@ function renderFooter() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-6 text-[12px] text-white/50">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-6 gap-y-1 text-[12px] text-white/50 text-center">
           <span>People</span>
           <span className="text-white/20">|</span>
           <span>Land</span>

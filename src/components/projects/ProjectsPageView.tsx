@@ -788,10 +788,10 @@ export default function ProjectsPageView() {
               </p>
             </div>
 
-            <div className="shrink-0">
+            <div className="w-full sm:w-auto shrink-0">
               <Link
                 href="/enquiry"
-                className="bg-accent text-[#0E2115] hover:bg-[#a88243] hover:text-white px-7 py-3.5 rounded-lg font-bold transition-all inline-flex items-center gap-2 group shadow-xl text-xs sm:text-sm"
+                className="w-full sm:w-auto bg-accent text-[#0E2115] hover:bg-[#a88243] hover:text-white px-7 py-3.5 rounded-lg font-bold transition-all inline-flex items-center justify-center gap-2 group shadow-xl text-xs sm:text-sm text-center"
               >
                 Enquire as a Developer / Investor
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />

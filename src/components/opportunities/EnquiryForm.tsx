@@ -395,43 +395,22 @@ export default function EnquiryForm({ opportunityId }: EnquiryFormProps) {
                 })}
               </div>
 
-              {/* Mobile */}
-              <div className="md:hidden flex items-center justify-center gap-2">
-                {STEPS.map((step, index) => {
-                  const isCompleted = completedSteps.includes(index);
-                  const isActive = index === currentStep;
-                  return (
-                    <div key={step.number} className="flex items-center gap-2">
-                      <div
-                        className={`w-[30px] h-[30px] rounded-full flex items-center justify-center text-[12px] font-bold shrink-0 ${
-                          isCompleted
-                            ? 'bg-primary text-white'
-                            : isActive
-                              ? 'bg-primary text-white'
-                              : 'bg-white border-2 border-gray-200 text-gray-400'
-                        }`}
-                      >
-                        {isCompleted ? (
-                          <Check size={13} strokeWidth={3} />
-                        ) : (
-                          step.number
-                        )}
-                      </div>
-                      {isActive && (
-                        <span className="text-[12px] font-semibold text-foreground">
-                          {step.label}
-                        </span>
-                      )}
-                      {index < STEPS.length - 1 && (
-                        <div
-                          className={`w-4 h-[2px] ${
-                            isCompleted ? 'bg-primary' : 'bg-gray-200'
-                          }`}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
+              {/* Mobile: compact progress header + bar (zero overflow guarantee) */}
+              <div className="md:hidden flex flex-col gap-2 px-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-accent tracking-wider uppercase">
+                    Step {currentStep + 1} of {STEPS.length}
+                  </span>
+                  <span className="text-[13px] font-bold text-foreground">
+                    {STEPS[currentStep].label}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="bg-primary h-full transition-all duration-300 rounded-full"
+                    style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -998,7 +977,7 @@ function renderFooter() {
             </span>
           </Link>
         </div>
-        <div className="flex items-center gap-6 text-[12px] text-white/50">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-6 gap-y-1 text-[12px] text-white/50 text-center">
           <span>People</span>
           <span className="text-white/20">|</span>
           <span>Land</span>

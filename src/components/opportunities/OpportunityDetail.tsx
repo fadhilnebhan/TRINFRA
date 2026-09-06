@@ -163,19 +163,19 @@ export default function OpportunityDetail({
       </section>
 
       {/* ====== 3. FLOATING PROJECT SUMMARY BAR ====== */}
-      <section className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16 my-8">
-        <div className="bg-white rounded-[18px] border border-gray-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-5 md:p-6">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-4 md:divide-x md:divide-gray-100">
+      <section className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 my-6 sm:my-8">
+        <div className="bg-white rounded-[18px] border border-gray-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.04)] p-4 sm:p-5 md:p-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6 md:gap-4 md:divide-x md:divide-gray-100">
             {/* Metric 1: Approx Area */}
-            <div className="flex items-center gap-3.5 md:px-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                <Ruler size={19} className="text-accent" />
+            <div className="flex items-center gap-2.5 sm:gap-3.5 md:px-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                <Ruler size={17} className="text-accent" />
               </div>
               <div>
-                <div className="text-[22px] font-heading font-extrabold text-foreground leading-none">
+                <div className="text-[18px] sm:text-[22px] font-heading font-extrabold text-foreground leading-none">
                   {opportunity.area}
                 </div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1 leading-tight">
+                <div className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1 leading-tight">
                   Approx. Area
                   <span className="block font-normal text-gray-500 capitalize">
                     Acres
@@ -185,15 +185,15 @@ export default function OpportunityDetail({
             </div>
 
             {/* Metric 2: Participating Landowners */}
-            <div className="flex items-center gap-3.5 md:px-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                <Users size={19} className="text-accent" />
+            <div className="flex items-center gap-2.5 sm:gap-3.5 md:px-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                <Users size={17} className="text-accent" />
               </div>
               <div>
-                <div className="text-[22px] font-heading font-extrabold text-foreground leading-none">
+                <div className="text-[18px] sm:text-[22px] font-heading font-extrabold text-foreground leading-none">
                   {opportunity.landowners}
                 </div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1 leading-tight">
+                <div className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-1 leading-tight">
                   Participating
                   <span className="block font-normal text-gray-500 capitalize">
                     Landowners
@@ -203,45 +203,45 @@ export default function OpportunityDetail({
             </div>
 
             {/* Metric 3: Location */}
-            <div className="flex items-center gap-3.5 md:px-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                <MapPin size={19} className="text-accent" />
+            <div className="flex items-center gap-2.5 sm:gap-3.5 md:px-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                <MapPin size={17} className="text-accent" />
               </div>
-              <div>
-                <div className="text-[15px] font-heading font-extrabold text-foreground leading-snug truncate max-w-[140px]">
+              <div className="min-w-0">
+                <div className="text-[13px] sm:text-[15px] font-heading font-extrabold text-foreground leading-snug truncate max-w-[120px] sm:max-w-[140px]">
                   {opportunity.location}
                 </div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">
+                <div className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">
                   Location
                 </div>
               </div>
             </div>
 
             {/* Metric 4: Opportunity Status */}
-            <div className="flex items-center gap-3.5 md:px-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                <TrendingUp size={19} className="text-accent" />
+            <div className="flex items-center gap-2.5 sm:gap-3.5 md:px-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                <TrendingUp size={17} className="text-accent" />
               </div>
               <div>
-                <div className="text-[15px] font-heading font-extrabold text-foreground leading-snug">
+                <div className="text-[13px] sm:text-[15px] font-heading font-extrabold text-foreground leading-snug">
                   {opportunity.status}
                 </div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">
-                  Opportunity Status
+                <div className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">
+                  Status
                 </div>
               </div>
             </div>
 
             {/* Metric 5: Development Potential */}
-            <div className="col-span-2 md:col-span-1 flex items-center gap-3.5 md:px-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                <Sprout size={19} className="text-accent" />
+            <div className="col-span-2 md:col-span-1 flex items-center gap-2.5 sm:gap-3.5 md:px-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
+                <Sprout size={17} className="text-accent" />
               </div>
               <div>
-                <div className="text-[15px] font-heading font-extrabold text-foreground leading-snug">
+                <div className="text-[13px] sm:text-[15px] font-heading font-extrabold text-foreground leading-snug">
                   High
                 </div>
-                <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">
+                <div className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">
                   Development Potential
                 </div>
               </div>

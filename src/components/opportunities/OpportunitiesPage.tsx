@@ -267,11 +267,11 @@ export default function OpportunitiesPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-end gap-2 shrink-0">
+            <div className="flex items-stretch sm:items-end gap-2 shrink-0 w-full sm:w-auto">
               <button
                 id="search-btn"
                 onClick={handleSearch}
-                className="bg-primary text-white px-6 py-2.5 rounded-lg text-[14px] font-bold hover:bg-primary-dark transition-colors flex items-center gap-2 shadow-sm"
+                className="flex-1 sm:flex-none bg-primary text-white px-6 py-2.5 rounded-lg text-[14px] font-bold hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 shadow-sm"
               >
                 <Search size={16} />
                 Search
@@ -280,7 +280,7 @@ export default function OpportunitiesPage() {
                 <button
                   id="clear-filters-btn"
                   onClick={handleClearFilters}
-                  className="bg-white text-gray-600 px-4 py-2.5 rounded-lg text-[14px] font-medium border border-gray-200 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                  className="flex-1 sm:flex-none bg-white text-gray-600 px-4 py-2.5 rounded-lg text-[14px] font-medium border border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
                 >
                   <X size={14} />
                   Clear Filters
@@ -558,7 +558,7 @@ export default function OpportunitiesPage() {
                 ? `/opportunities/${filteredOpportunities[0].id}`
                 : `/opportunities/${OPPORTUNITIES[0].id}`
             }
-            className="bg-accent text-white px-10 py-4 rounded-md font-bold hover:bg-accent-hover transition-colors flex items-center justify-center gap-2 shrink-0 group text-[15px] shadow-lg"
+            className="w-full sm:w-auto bg-accent text-white px-8 sm:px-10 py-4 rounded-md font-bold hover:bg-accent-hover transition-colors flex items-center justify-center gap-2 shrink-0 group text-[15px] shadow-lg text-center"
           >
             View Top Opportunity
             <ArrowRight

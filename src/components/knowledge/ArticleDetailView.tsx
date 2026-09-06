@@ -640,7 +640,7 @@ export default function ArticleDetailView({ article }: ArticleDetailViewProps) {
 
           <Link
             href="/opportunities"
-            className="shrink-0 bg-accent hover:bg-accent-light text-primary-dark font-bold text-[14px] px-7 py-3.5 rounded-lg shadow-sm transition-colors flex items-center gap-2 group"
+            className="w-full sm:w-auto shrink-0 bg-accent hover:bg-accent-light text-primary-dark font-bold text-[14px] px-7 py-3.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2 group text-center"
           >
             <span>View Opportunities</span>
             <ArrowRight

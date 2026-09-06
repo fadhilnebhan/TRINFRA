@@ -41,7 +41,7 @@ export default function AdminMobileNav({ onMoreClick }: AdminMobileNavProps) {
       </Link>
 
       <Link
-        href="/admin/developer-enquiries"
+        href="/admin/enquiries"
         className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg transition-colors ${
           isEnquiries ? 'text-primary font-bold' : 'text-gray-400 hover:text-gray-600'
         }`}
