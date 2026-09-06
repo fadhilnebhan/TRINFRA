@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getAuthenticatedAdmin } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   const admin = await getAuthenticatedAdmin();
