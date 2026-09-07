@@ -37,7 +37,7 @@ export default function ProjectsPageView() {
         const res = await fetch('/api/projects');
         if (res.ok) {
           const data = await res.json();
-          if (data.projects && data.projects.length > 0) {
+          if (Array.isArray(data.projects)) {
             setProjectsList(data.projects);
           }
         }

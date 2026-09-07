@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
-import { Users, FileText, Clock, Building2 } from 'lucide-react';
+import { Users, FileText, Clock, Building2, Compass, FolderKanban } from 'lucide-react';
 import {
   SEED_DEVELOPER_ENQUIRIES,
   LandownerLead,
@@ -26,12 +26,16 @@ export default function AdminOverviewPage() {
     newRegistrations: number;
     verificationPending: number;
     developerEnquiries: number;
+    totalOpportunities?: number;
+    totalProjects?: number;
   }>({
     totalLandowners: 5,
     totalLandownersDisplay: '5',
     newRegistrations: 1,
     verificationPending: 1,
     developerEnquiries: 3,
+    totalOpportunities: 4,
+    totalProjects: 5,
   });
 
   const [enquiries, setEnquiries] = useState<RecentEnquiryPreview[]>(SEED_DEVELOPER_ENQUIRIES);
@@ -116,7 +120,7 @@ export default function AdminOverviewPage() {
             Overview
           </h1>
           <p className="text-[14px] text-gray-500 mt-0.5">
-            Monitor land registrations, enquiries and verification activity.
+            Monitor land registrations, enquiries, opportunities, and projects.
           </p>
         </div>
 
@@ -130,12 +134,12 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* 4 KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-5">
         <KpiCard
           label="Total Landowners"
           value={stats.totalLandowners !== undefined ? stats.totalLandowners : stats.totalLandownersDisplay}
-          subtext="Live registered count"
+          subtext="Live registered"
           trend="up"
           icon={Users}
           iconBgColor="bg-emerald-50"
@@ -145,7 +149,7 @@ export default function AdminOverviewPage() {
         <KpiCard
           label="New Registrations"
           value={stats.newRegistrations}
-          subtext="+4 this week"
+          subtext="Requires review"
           trend="up"
           icon={FileText}
           iconBgColor="bg-amber-50"
@@ -155,7 +159,7 @@ export default function AdminOverviewPage() {
         <KpiCard
           label="Verification Pending"
           value={stats.verificationPending}
-          subtext="-2 from last week"
+          subtext="In progress"
           trend="down"
           icon={Clock}
           iconBgColor="bg-orange-50"
@@ -165,11 +169,31 @@ export default function AdminOverviewPage() {
         <KpiCard
           label="Developer Enquiries"
           value={stats.developerEnquiries}
-          subtext="+6 this month"
+          subtext="Partner interest"
           trend="up"
           icon={Building2}
           iconBgColor="bg-teal-50"
           iconColor="text-teal-700"
+        />
+
+        <KpiCard
+          label="Opportunities"
+          value={stats.totalOpportunities ?? 4}
+          subtext="Published listings"
+          trend="up"
+          icon={Compass}
+          iconBgColor="bg-blue-50"
+          iconColor="text-blue-700"
+        />
+
+        <KpiCard
+          label="Managed Projects"
+          value={stats.totalProjects ?? 5}
+          subtext="Active in database"
+          trend="up"
+          icon={FolderKanban}
+          iconBgColor="bg-purple-50"
+          iconColor="text-purple-700"
         />
       </div>
 

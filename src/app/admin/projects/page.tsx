@@ -15,31 +15,32 @@ import {
   CheckCircle2,
   Loader2,
   MapPin,
-  Compass,
+  FolderKanban,
 } from 'lucide-react';
-import { OPPORTUNITIES } from '@/lib/opportunitiesData';
+import { PROJECTS } from '@/lib/projectsData';
 
-interface AdminOpportunity {
+interface AdminProject {
   id: string;
   title: string;
-  slug?: string;
+  projectName?: string;
+  slug: string;
   location: string;
   district: string;
-  locality: string;
-  area: number;
-  areaUnit: string;
-  landownersCount?: number;
-  landowners?: number;
+  approximateArea: string;
+  areaNum?: number;
+  participatingLandowners: number;
   status: string;
   rawStatus?: string;
+  developmentStage: string;
+  rawStage?: string;
+  progressPercentage?: number;
+  progress?: number;
   image?: string;
-  shortDescription: string;
+  description: string;
   overview: string;
-  highlights?: string[] | string;
-  developmentPotential?: string;
-  currentStatusDetail?: string;
-  latitude?: number;
-  longitude?: number;
+  tags?: string[] | string;
+  featured?: boolean;
+  opportunityId?: string | null;
 }
 
 const DISTRICT_OPTIONS = [
@@ -51,118 +52,132 @@ const DISTRICT_OPTIONS = [
   'Palakkad',
   'Kannur',
   'Kottayam',
-  'Kollam',
   'Alappuzha',
+  'Wayanad',
   'Idukki',
+  'Kollam',
   'Kasaragod',
   'Pathanamthitta',
-  'Wayanad',
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'OPEN', label: 'New Opportunity (OPEN)' },
-  { value: 'IN_PROGRESS', label: 'In Progress (IN_PROGRESS)' },
-  { value: 'FORMING', label: 'Emerging (FORMING)' },
-  { value: 'CLOSED', label: 'Closed (CLOSED)' },
+  { value: 'PLANNING', label: 'Planning' },
+  { value: 'IN_PROGRESS', label: 'In Progress' },
+  { value: 'DEVELOPMENT', label: 'Development' },
+  { value: 'COMPLETED', label: 'Completed' },
 ];
 
-export default function AdminOpportunitiesPage() {
-  const [opportunities, setOpportunities] = useState<AdminOpportunity[]>(OPPORTUNITIES as unknown as AdminOpportunity[]);
+const STAGE_OPTIONS = [
+  { value: 'LAND_AGGREGATION', label: 'Land Aggregation' },
+  { value: 'PLANNING', label: 'Planning' },
+  { value: 'APPROVALS', label: 'Approvals' },
+  { value: 'DEVELOPMENT', label: 'Development' },
+  { value: 'COMPLETED', label: 'Completed' },
+];
+
+export default function AdminProjectsPage() {
+  const [projects, setProjects] = useState<AdminProject[]>(PROJECTS as unknown as AdminProject[]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingOpp, setEditingOpp] = useState<AdminOpportunity | null>(null);
-  const [deletingOpp, setDeletingOpp] = useState<AdminOpportunity | null>(null);
+  const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
+  const [deletingProject, setDeletingProject] = useState<AdminProject | null>(null);
 
-  // Form states
+  // Form state
   const [formData, setFormData] = useState({
     title: '',
     district: 'Kozhikode',
-    locality: '',
     location: '',
-    area: '50',
-    areaUnit: 'Acres',
-    landownersCount: '12',
-    status: 'OPEN',
-    shortDescription: '',
+    approximateArea: '45 Acres',
+    areaNum: '45',
+    participatingLandowners: '18',
+    status: 'PLANNING',
+    developmentStage: 'PLANNING',
+    progressPercentage: '20',
+    description: '',
     overview: '',
-    highlights: 'Clear title verification in progress\nDirect arterial road access\nInstitutional master plan zone',
-    developmentPotential: '',
-    image: '/images/opportunities/kozhikode.jpg',
+    tags: 'Land Pooling, Master Planned, Institutional',
+    image: '/images/projects/kozhikode-hub.jpg',
+    featured: false,
+    opportunityId: '',
   });
 
-  const fetchOpportunities = async () => {
+  const fetchProjects = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/opportunities');
+      const res = await fetch('/api/projects');
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data.opportunities)) {
-          setOpportunities(data.opportunities);
+        if (Array.isArray(data.projects)) {
+          setProjects(data.projects);
         }
       }
     } catch (err) {
-      console.error('Failed to load opportunities from database:', err);
+      console.error('Failed to load projects from database:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOpportunities();
+    fetchProjects();
   }, []);
 
   const openCreateModal = () => {
-    setEditingOpp(null);
+    setEditingProject(null);
     setFormData({
       title: '',
       district: 'Kozhikode',
-      locality: '',
       location: '',
-      area: '50',
-      areaUnit: 'Acres',
-      landownersCount: '12',
-      status: 'OPEN',
-      shortDescription: '',
+      approximateArea: '45 Acres',
+      areaNum: '45',
+      participatingLandowners: '18',
+      status: 'PLANNING',
+      developmentStage: 'PLANNING',
+      progressPercentage: '20',
+      description: '',
       overview: '',
-      highlights: 'Clear title verification in progress\nDirect arterial road access\nInstitutional master plan zone',
-      developmentPotential: '',
-      image: '/images/opportunities/kozhikode.jpg',
+      tags: 'Land Pooling, Master Planned, Institutional',
+      image: '/images/projects/kozhikode-hub.jpg',
+      featured: false,
+      opportunityId: '',
     });
     setIsModalOpen(true);
   };
 
-  const openEditModal = (opp: AdminOpportunity) => {
-    setEditingOpp(opp);
-    let highlightsText = '';
-    if (Array.isArray(opp.highlights)) {
-      highlightsText = opp.highlights.join('\n');
-    } else if (typeof opp.highlights === 'string') {
+  const openEditModal = (proj: AdminProject) => {
+    setEditingProject(proj);
+    let tagsText = '';
+    if (Array.isArray(proj.tags)) {
+      tagsText = proj.tags.join(', ');
+    } else if (typeof proj.tags === 'string') {
       try {
-        const parsed = JSON.parse(opp.highlights);
-        highlightsText = Array.isArray(parsed) ? parsed.join('\n') : opp.highlights;
+        const parsed = JSON.parse(proj.tags);
+        tagsText = Array.isArray(parsed) ? parsed.join(', ') : proj.tags;
       } catch {
-        highlightsText = opp.highlights;
+        tagsText = proj.tags;
       }
     }
 
     setFormData({
-      title: opp.title || '',
-      district: opp.district || 'Kozhikode',
-      locality: opp.locality || '',
-      location: opp.location || '',
-      area: String(opp.area || 0),
-      areaUnit: opp.areaUnit || 'Acres',
-      landownersCount: String(opp.landownersCount || opp.landowners || 1),
-      status: opp.rawStatus || (opp.status === 'New Opportunity' ? 'OPEN' : opp.status === 'Emerging' ? 'FORMING' : 'IN_PROGRESS'),
-      shortDescription: opp.shortDescription || '',
-      overview: opp.overview || '',
-      highlights: highlightsText,
-      developmentPotential: opp.developmentPotential || '',
-      image: opp.image || '/images/opportunities/kozhikode.jpg',
+      title: proj.title || proj.projectName || '',
+      district: proj.district || 'Kozhikode',
+      location: proj.location || '',
+      approximateArea: proj.approximateArea || '45 Acres',
+      areaNum: String(proj.areaNum || parseFloat(proj.approximateArea) || 0),
+      participatingLandowners: String(proj.participatingLandowners || 1),
+      status: proj.rawStatus || (proj.status === 'In Progress' ? 'IN_PROGRESS' : proj.status.toUpperCase()),
+      developmentStage: proj.rawStage || (proj.developmentStage === 'Land Aggregation' ? 'LAND_AGGREGATION' : proj.developmentStage.toUpperCase()),
+      progressPercentage: String(proj.progressPercentage ?? proj.progress ?? 0),
+      description: proj.description || '',
+      overview: proj.overview || '',
+      tags: tagsText,
+      image: proj.image || '/images/projects/kozhikode-hub.jpg',
+      featured: Boolean(proj.featured),
+      opportunityId: proj.opportunityId || '',
     });
     setIsModalOpen(true);
   };
@@ -172,54 +187,56 @@ export default function AdminOpportunitiesPage() {
     setActionLoading(true);
     setFeedback(null);
 
-    const highlightsArray = formData.highlights
-      .split('\n')
-      .map((h) => h.trim())
-      .filter((h) => h.length > 0);
+    const tagsArray = formData.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
 
     const payload = {
       title: formData.title,
       district: formData.district,
-      locality: formData.locality || formData.location,
-      location: formData.location || `${formData.locality}, ${formData.district}`,
-      area: parseFloat(formData.area) || 0,
-      areaUnit: formData.areaUnit,
-      landownersCount: parseInt(formData.landownersCount, 10) || 1,
+      location: formData.location || `${formData.district}, Kerala`,
+      approximateArea: formData.approximateArea.includes(' ') ? formData.approximateArea : `${formData.approximateArea} Acres`,
+      areaNum: parseFloat(formData.areaNum) || parseFloat(formData.approximateArea) || 0,
+      participatingLandowners: parseInt(formData.participatingLandowners, 10) || 1,
       status: formData.status,
-      shortDescription: formData.shortDescription,
+      developmentStage: formData.developmentStage,
+      progressPercentage: parseInt(formData.progressPercentage, 10) || 0,
+      description: formData.description,
       overview: formData.overview,
-      highlights: highlightsArray,
-      developmentPotential: formData.developmentPotential,
+      tags: tagsArray,
       image: formData.image,
+      featured: formData.featured,
+      opportunityId: formData.opportunityId || null,
     };
 
     try {
-      if (editingOpp) {
-        // PATCH existing
-        const res = await fetch(`/api/opportunities/${editingOpp.id}`, {
+      if (editingProject) {
+        // PATCH
+        const res = await fetch(`/api/projects/${editingProject.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
         const result = await res.json();
-        if (!res.ok) throw new Error(result.error || 'Failed to update opportunity');
+        if (!res.ok) throw new Error(result.error || 'Failed to update project');
 
-        setFeedback({ type: 'success', message: `Opportunity "${formData.title}" updated successfully.` });
+        setFeedback({ type: 'success', message: `Project "${formData.title}" updated successfully.` });
       } else {
-        // POST new
-        const res = await fetch('/api/opportunities', {
+        // POST
+        const res = await fetch('/api/projects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
         const result = await res.json();
-        if (!res.ok) throw new Error(result.error || 'Failed to create opportunity');
+        if (!res.ok) throw new Error(result.error || 'Failed to create project');
 
-        setFeedback({ type: 'success', message: `New opportunity "${formData.title}" created successfully.` });
+        setFeedback({ type: 'success', message: `New project "${formData.title}" created successfully.` });
       }
 
       setIsModalOpen(false);
-      await fetchOpportunities();
+      await fetchProjects();
     } catch (err: unknown) {
       setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Operation failed' });
     } finally {
@@ -228,23 +245,23 @@ export default function AdminOpportunitiesPage() {
   };
 
   const handleDelete = async () => {
-    if (!deletingOpp) return;
+    if (!deletingProject) return;
     setActionLoading(true);
     setFeedback(null);
 
     try {
-      const res = await fetch(`/api/opportunities/${deletingOpp.id}`, {
+      const res = await fetch(`/api/projects/${deletingProject.id}`, {
         method: 'DELETE',
       });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Failed to delete opportunity');
+      if (!res.ok) throw new Error(result.error || 'Failed to delete project');
 
       setFeedback({
         type: 'success',
-        message: `Opportunity "${deletingOpp.title}" (${deletingOpp.id}) was permanently deleted.`,
+        message: `Project "${deletingProject.title || deletingProject.projectName}" (${deletingProject.id}) was permanently deleted.`,
       });
-      setDeletingOpp(null);
-      await fetchOpportunities();
+      setDeletingProject(null);
+      await fetchProjects();
     } catch (err: unknown) {
       setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Delete operation failed' });
     } finally {
@@ -268,11 +285,11 @@ export default function AdminOpportunitiesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-[26px] md:text-[30px] font-heading font-extrabold text-foreground tracking-tight flex items-center gap-3">
-            <Compass className="text-accent w-7 h-7" />
-            Opportunities CMS
+            <FolderKanban className="text-accent w-7 h-7" />
+            Projects CMS
           </h1>
           <p className="text-[14px] text-gray-500 mt-0.5">
-            Create, edit, manage, or delete land-pooling listings and consolidated parcels.
+            Create, edit, manage, or delete structured land-pooling and infrastructure development projects.
           </p>
         </div>
 
@@ -282,7 +299,7 @@ export default function AdminOpportunitiesPage() {
           className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-[14px] font-semibold shadow-sm hover:bg-primary-light transition-colors cursor-pointer shrink-0"
         >
           <Plus size={18} />
-          Create Opportunity
+          Create Project
         </button>
       </div>
 
@@ -312,15 +329,15 @@ export default function AdminOpportunitiesPage() {
         </div>
       )}
 
-      {/* Opportunities List Card */}
+      {/* Projects List Card */}
       <div className="bg-white rounded-[16px] border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] overflow-hidden">
         <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between">
           <div>
             <h2 className="font-bold text-[16px] text-foreground">
-              All Platform Opportunities ({opportunities.length})
+              All Active Projects ({projects.length})
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">
-              Synced with Supabase PostgreSQL. Updates reflect instantly on public /opportunities.
+              Synced with Supabase PostgreSQL. Updates reflect immediately on the public /projects directory.
             </p>
           </div>
           {loading && (
@@ -331,55 +348,73 @@ export default function AdminOpportunitiesPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
+          <table className="w-full text-left border-collapse min-w-[750px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/60 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                <th className="py-3 px-4">Opportunity</th>
-                <th className="py-3 px-4">District / Locality</th>
+                <th className="py-3 px-4">Project</th>
+                <th className="py-3 px-4">District / Location</th>
                 <th className="py-3 px-4">Area</th>
-                <th className="py-3 px-4">Landowners</th>
+                <th className="py-3 px-4">Stage</th>
+                <th className="py-3 px-4">Progress</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-[13px]">
-              {opportunities.map((opp) => (
-                <tr key={opp.id} className="hover:bg-gray-50/80 transition-colors">
+              {projects.map((proj) => (
+                <tr key={proj.id} className="hover:bg-gray-50/80 transition-colors">
                   <td className="py-3.5 px-4 font-bold text-foreground">
                     <div className="flex flex-col">
-                      <span className="font-semibold text-[14px] text-foreground">{opp.title}</span>
-                      <span className="text-[11px] text-gray-400 font-mono">{opp.id} • {opp.slug}</span>
+                      <span className="font-semibold text-[14px] text-foreground">
+                        {proj.title || proj.projectName}
+                      </span>
+                      <span className="text-[11px] text-gray-400 font-mono">
+                        {proj.id} • {proj.slug}
+                      </span>
                     </div>
                   </td>
                   <td className="py-3.5 px-4 text-gray-600">
                     <div className="flex items-center gap-1.5">
                       <MapPin size={13} className="text-gray-400 shrink-0" />
-                      <span>{opp.locality ? `${opp.locality}, ${opp.district}` : opp.location || opp.district}</span>
+                      <span>{proj.location || proj.district}</span>
                     </div>
                   </td>
                   <td className="py-3.5 px-4 font-medium text-foreground">
-                    {opp.area} {opp.areaUnit || 'Acres'}
+                    {proj.approximateArea}
                   </td>
-                  <td className="py-3.5 px-4 text-gray-600">
-                    {opp.landownersCount || opp.landowners || 1} Owners
+                  <td className="py-3.5 px-4 text-gray-600 text-[12px]">
+                    {proj.developmentStage}
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-primary h-1.5 rounded-full"
+                          style={{ width: `${proj.progressPercentage ?? proj.progress ?? 0}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-gray-700">
+                        {proj.progressPercentage ?? proj.progress ?? 0}%
+                      </span>
+                    </div>
                   </td>
                   <td className="py-3.5 px-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${
-                        opp.status === 'New Opportunity' || opp.status === 'OPEN'
+                        proj.status === 'Completed' || proj.status === 'COMPLETED'
                           ? 'bg-blue-50 text-blue-700 border-blue-200'
-                          : opp.status === 'In Progress' || opp.status === 'IN_PROGRESS'
+                          : proj.status === 'In Progress' || proj.status === 'IN_PROGRESS' || proj.status === 'Development'
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                           : 'bg-amber-50 text-amber-800 border-amber-200'
                       }`}
                     >
-                      {opp.status}
+                      {proj.status}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <Link
-                        href={`/opportunities/${opp.slug || opp.id}`}
+                        href={`/projects/${proj.slug || proj.id}`}
                         target="_blank"
                         className="p-1.5 text-gray-400 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors"
                         title="View Public Page"
@@ -389,18 +424,18 @@ export default function AdminOpportunitiesPage() {
 
                       <button
                         type="button"
-                        onClick={() => openEditModal(opp)}
+                        onClick={() => openEditModal(proj)}
                         className="p-1.5 text-gray-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                        title="Edit Opportunity"
+                        title="Edit Project"
                       >
                         <Pencil size={15} />
                       </button>
 
                       <button
                         type="button"
-                        onClick={() => setDeletingOpp(opp)}
+                        onClick={() => setDeletingProject(proj)}
                         className="p-1.5 text-gray-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete Opportunity"
+                        title="Delete Project"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -421,10 +456,10 @@ export default function AdminOpportunitiesPage() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-bold text-[18px] text-foreground">
-                  {editingOpp ? `Edit Opportunity (${editingOpp.id})` : 'Create New Opportunity'}
+                  {editingProject ? `Edit Project (${editingProject.id})` : 'Create New Project'}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  {editingOpp ? 'Update listing details in PostgreSQL' : 'Publish a new land-pooling opportunity'}
+                  {editingProject ? 'Update project details in PostgreSQL' : 'Add a new project listing to TRINFRA'}
                 </p>
               </div>
               <button
@@ -440,15 +475,15 @@ export default function AdminOpportunitiesPage() {
             <form onSubmit={handleSave} className="overflow-y-auto p-6 space-y-4 text-[13px]">
               <div>
                 <label className="block font-semibold text-gray-700 mb-1">
-                  Opportunity Title <span className="text-red-500">*</span>
+                  Project Title <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g. Kozhikode North Land Consolidation Zone"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary text-[14px]"
+                  placeholder="e.g. Kozhikode Logistics & Warehousing Hub"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary text-[14px]"
                 />
               </div>
 
@@ -470,61 +505,46 @@ export default function AdminOpportunitiesPage() {
 
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1">
-                    Locality / Town <span className="text-red-500">*</span>
+                    Location Description <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.locality}
-                    onChange={(e) => setFormData({ ...formData, locality: e.target.value })}
-                    placeholder="e.g. Koyilandy"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    placeholder="e.g. Ramanattukara Bypass Corridor"
                     className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary text-[14px]"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Location / Address Description <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="e.g. NH 66 Growth Corridor, Koyilandy, Kozhikode"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary text-[14px]"
-                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1">
-                    Area Number <span className="text-red-500">*</span>
+                    Approximate Area <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="number"
-                    step="0.1"
+                    type="text"
                     required
-                    value={formData.area}
-                    onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary text-[14px]"
+                    value={formData.approximateArea}
+                    onChange={(e) => setFormData({ ...formData, approximateArea: e.target.value })}
+                    placeholder="e.g. 45 Acres"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[14px]"
                   />
                 </div>
 
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1">
-                    Area Unit
+                    Area Number (Numeric)
                   </label>
-                  <select
-                    value={formData.areaUnit}
-                    onChange={(e) => setFormData({ ...formData, areaUnit: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px]"
-                  >
-                    <option value="Acres">Acres</option>
-                    <option value="Cents">Cents</option>
-                    <option value="Hectares">Hectares</option>
-                  </select>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={formData.areaNum}
+                    onChange={(e) => setFormData({ ...formData, areaNum: e.target.value })}
+                    placeholder="45"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[14px]"
+                  />
                 </div>
 
                 <div>
@@ -534,26 +554,57 @@ export default function AdminOpportunitiesPage() {
                   <input
                     type="number"
                     min="1"
-                    value={formData.landownersCount}
-                    onChange={(e) => setFormData({ ...formData, landownersCount: e.target.value })}
+                    value={formData.participatingLandowners}
+                    onChange={(e) => setFormData({ ...formData, participatingLandowners: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[14px]"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Status
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px]"
-                >
-                  {STATUS_OPTIONS.map((st) => (
-                    <option key={st.value} value={st.value}>{st.label}</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px]"
+                  >
+                    {STATUS_OPTIONS.map((st) => (
+                      <option key={st.value} value={st.value}>{st.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    Development Stage
+                  </label>
+                  <select
+                    value={formData.developmentStage}
+                    onChange={(e) => setFormData({ ...formData, developmentStage: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px]"
+                  >
+                    {STAGE_OPTIONS.map((stg) => (
+                      <option key={stg.value} value={stg.value}>{stg.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">
+                    Progress Percentage (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.progressPercentage}
+                    onChange={(e) => setFormData({ ...formData, progressPercentage: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[14px]"
+                  />
+                </div>
               </div>
 
               <div>
@@ -563,49 +614,49 @@ export default function AdminOpportunitiesPage() {
                 <textarea
                   required
                   rows={2}
-                  value={formData.shortDescription}
-                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                  placeholder="Summary for cards and previews..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Summary for cards and directory previews..."
                   className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary text-[13px]"
                 />
               </div>
 
               <div>
                 <label className="block font-semibold text-gray-700 mb-1">
-                  Detailed Overview <span className="text-red-500">*</span>
+                  Detailed Project Overview <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   required
                   rows={4}
                   value={formData.overview}
                   onChange={(e) => setFormData({ ...formData, overview: e.target.value })}
-                  placeholder="Comprehensive description of the consolidated land parcel..."
+                  placeholder="Comprehensive project scope, development concept, and infrastructure integration..."
                   className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary text-[13px]"
                 />
               </div>
 
               <div>
                 <label className="block font-semibold text-gray-700 mb-1">
-                  Highlights (One per line)
+                  Tags (Comma separated)
                 </label>
-                <textarea
-                  rows={3}
-                  value={formData.highlights}
-                  onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
-                  placeholder="Direct 4-lane access&#10;Clear titles&#10;Zoned for mixed use"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[13px] font-mono"
+                <input
+                  type="text"
+                  value={formData.tags}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  placeholder="Land Pooling, Master Planned, Institutional"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[13px]"
                 />
               </div>
 
               <div>
                 <label className="block font-semibold text-gray-700 mb-1">
-                  Image Path / URL
+                  Image URL / Asset Path
                 </label>
                 <input
                   type="text"
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="/images/opportunities/kozhikode.jpg or external URL"
+                  placeholder="/images/projects/kozhikode-hub.jpg or external URL"
                   className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[13px]"
                 />
               </div>
@@ -625,7 +676,7 @@ export default function AdminOpportunitiesPage() {
                   className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-primary text-white text-[13px] font-semibold hover:bg-primary-light transition-colors disabled:opacity-50"
                 >
                   {actionLoading && <Loader2 size={15} className="animate-spin" />}
-                  {editingOpp ? 'Save Changes' : 'Publish Opportunity'}
+                  {editingProject ? 'Save Changes' : 'Create Project'}
                 </button>
               </div>
             </form>
@@ -634,7 +685,7 @@ export default function AdminOpportunitiesPage() {
       )}
 
       {/* DELETE CONFIRMATION MODAL */}
-      {deletingOpp && (
+      {deletingProject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3 text-red-600 mb-3">
@@ -650,18 +701,20 @@ export default function AdminOpportunitiesPage() {
             </div>
 
             <p className="text-[13px] text-gray-600 mb-2 leading-relaxed">
-              Are you sure you want to permanently delete opportunity{' '}
-              <strong className="text-foreground font-semibold">&quot;{deletingOpp.title}&quot;</strong>{' '}
-              ({deletingOpp.id})?
+              Are you sure you want to permanently delete project{' '}
+              <strong className="text-foreground font-semibold">
+                &quot;{deletingProject.title || deletingProject.projectName}&quot;
+              </strong>{' '}
+              ({deletingProject.id})?
             </p>
             <p className="text-[12px] text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg border border-gray-200">
-              This record will be permanently deleted from Supabase PostgreSQL and will disappear immediately from the public <code className="text-primary font-mono font-semibold">/opportunities</code> page.
+              This record will be permanently deleted from Supabase PostgreSQL and will disappear immediately from the public <code className="text-primary font-mono font-semibold">/projects</code> page.
             </p>
 
             <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
-                onClick={() => setDeletingOpp(null)}
+                onClick={() => setDeletingProject(null)}
                 className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 text-[13px] font-medium"
               >
                 Cancel

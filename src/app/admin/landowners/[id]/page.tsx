@@ -21,6 +21,7 @@ import {
   Square,
   Upload,
   RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { LandownerStatus } from '@/lib/adminData';
@@ -131,6 +132,25 @@ export default function LandownerDetailPage() {
   const [clarificationReason, setClarificationReason] = useState('');
   const [rejectionModal, setRejectionModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteLead = async () => {
+    if (!lead) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/landowners/${lead.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete landowner record');
+
+      window.location.href = '/admin/landowners';
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to delete landowner record');
+      setIsDeleting(false);
+    }
+  };
 
   // Note addition
   const [newNoteContent, setNewNoteContent] = useState('');
@@ -448,6 +468,15 @@ export default function LandownerDetailPage() {
               <span>Reject</span>
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={() => setDeleteModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-[12px] font-semibold transition-all cursor-pointer"
+          >
+            <Trash2 size={14} />
+            <span>Delete</span>
+          </button>
         </div>
       </div>
 
@@ -1109,6 +1138,58 @@ export default function LandownerDetailPage() {
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[13px] font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div
+            className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 space-y-4 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 className="font-heading font-bold text-[17px] text-foreground">
+                  Confirm Landowner Deletion
+                </h3>
+                <span className="text-xs text-red-600 font-semibold">PostgreSQL Server Mutation</span>
+              </div>
+            </div>
+
+            <p className="text-[13px] text-gray-600 leading-relaxed">
+              Are you sure you want to permanently delete registration{' '}
+              <strong className="text-foreground font-semibold">
+                &quot;{lead.referenceNumber}&quot;
+              </strong>{' '}
+              ({lead.fullName})?
+            </p>
+            <p className="text-[12px] text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              This will permanently remove the landowner, parcels, uploaded documents, and internal audit notes from Supabase PostgreSQL.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => setDeleteModal(false)}
+                className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[13px] font-semibold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteLead}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[13px] font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting && <Loader2 size={15} className="animate-spin" />}
+                Yes, Delete Record
               </button>
             </div>
           </div>

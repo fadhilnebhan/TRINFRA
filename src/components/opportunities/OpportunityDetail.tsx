@@ -34,8 +34,10 @@ interface OpportunityDetailProps {
 export default function OpportunityDetail({
   opportunityId,
 }: OpportunityDetailProps) {
+  const initialOpp = getOpportunityById(opportunityId);
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
-  const [opportunity, setOpportunity] = useState(getOpportunityById(opportunityId));
+  const [opportunity, setOpportunity] = useState(initialOpp);
+  const [loading, setLoading] = useState(!initialOpp);
 
   useEffect(() => {
     async function fetchLiveOpportunity() {
@@ -49,10 +51,21 @@ export default function OpportunityDetail({
         }
       } catch (err) {
         console.warn('Failed to fetch opportunity from database API:', err);
+      } finally {
+        setLoading(false);
       }
     }
     fetchLiveOpportunity();
   }, [opportunityId]);
+
+  if (loading) {
+    return (
+      <div className="py-28 text-center max-w-[1360px] mx-auto px-6">
+        <div className="w-10 h-10 border-3 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-500 text-[15px] font-medium">Loading opportunity details...</p>
+      </div>
+    );
+  }
 
   if (!opportunity) {
     return (

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import OpportunityDetail from '@/components/opportunities/OpportunityDetail';
@@ -55,14 +54,12 @@ export function generateMetadata({ params }: PageProps): Metadata {
   };
 }
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function ProjectDetailPage({ params }: PageProps) {
   // Resolve mapped opportunity ID or direct ID
   const mappedOppId = PROJECT_OPPORTUNITY_MAP[params.id] || params.id;
-  const opp = getOpportunityById(mappedOppId);
-
-  if (!opp) {
-    redirect('/projects');
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">

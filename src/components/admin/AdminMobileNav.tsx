@@ -13,7 +13,7 @@ export default function AdminMobileNav({ onMoreClick }: AdminMobileNavProps) {
 
   const isOverview = pathname === '/admin';
   const isLeads = pathname.startsWith('/admin/landowners');
-  const isEnquiries = pathname.startsWith('/admin/developer-enquiries');
+  const isEnquiries = pathname.startsWith('/admin/enquiries');
 
   return (
     <nav

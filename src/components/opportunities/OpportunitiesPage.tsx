@@ -63,7 +63,7 @@ export default function OpportunitiesPage() {
         const res = await fetch('/api/opportunities');
         if (res.ok) {
           const data = await res.json();
-          if (data.opportunities && data.opportunities.length > 0) {
+          if (Array.isArray(data.opportunities)) {
             setOpportunitiesList(data.opportunities);
           }
         }

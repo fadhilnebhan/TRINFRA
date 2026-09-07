@@ -16,6 +16,9 @@ import {
   AlertCircle,
   ExternalLink,
   RefreshCw,
+  Trash2,
+  Loader2,
+  CheckCircle2,
 } from 'lucide-react';
 import CustomSelect, { SelectOption } from '@/components/opportunities/CustomSelect';
 
@@ -134,6 +137,9 @@ export default function AdminEnquiriesPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
+  const [deletingEnquiry, setDeletingEnquiry] = useState<EnquiryRecord | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Fetch enquiries
   const loadEnquiries = useCallback(async () => {
@@ -163,6 +169,33 @@ export default function AdminEnquiriesPage() {
     loadEnquiries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleDelete = async () => {
+    if (!deletingEnquiry) return;
+    setIsDeleting(true);
+    setFeedback(null);
+    try {
+      const res = await fetch(`/api/admin/enquiries/${deletingEnquiry.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete enquiry');
+
+      setFeedback({
+        type: 'success',
+        message: `Enquiry ${deletingEnquiry.referenceNumber} (${deletingEnquiry.fullName}) was deleted successfully from PostgreSQL.`,
+      });
+      if (selectedEnquiry?.id === deletingEnquiry.id) {
+        setSelectedEnquiry(null);
+      }
+      setDeletingEnquiry(null);
+      await loadEnquiries();
+    } catch (err: unknown) {
+      setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Failed to delete enquiry' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Summary counts
   const summaryCounts = useMemo(() => {
@@ -347,6 +380,32 @@ export default function AdminEnquiriesPage() {
           <span>Refresh Records</span>
         </button>
       </div>
+
+      {/* Feedback Banner */}
+      {feedback && (
+        <div
+          className={`p-4 rounded-xl flex items-center justify-between text-[14px] font-medium border ${
+            feedback.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-red-50 text-red-800 border-red-200'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            {feedback.type === 'success' ? (
+              <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle size={18} className="text-red-600 shrink-0" />
+            )}
+            <span>{feedback.message}</span>
+          </div>
+          <button
+            onClick={() => setFeedback(null)}
+            className="text-gray-400 hover:text-gray-600 p-1"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
@@ -580,14 +639,24 @@ export default function AdminEnquiriesPage() {
                           {enq.createdAt ? new Date(enq.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent'}
                         </td>
                         <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedEnquiry(enq)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-primary hover:text-white text-gray-700 text-[12px] font-semibold transition-colors cursor-pointer"
-                          >
-                            <Eye size={13} />
-                            <span>View</span>
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedEnquiry(enq)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-primary hover:text-white text-gray-700 text-[12px] font-semibold transition-colors cursor-pointer"
+                            >
+                              <Eye size={13} />
+                              <span>View</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeletingEnquiry(enq)}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Delete Enquiry"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -638,11 +707,24 @@ export default function AdminEnquiriesPage() {
                       <span>
                         {enq.createdAt ? new Date(enq.createdAt).toLocaleDateString('en-GB') : 'Recent'}
                       </span>
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold border ${priorityBadge.color}`}
-                      >
-                        {priorityBadge.label} Priority
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-semibold border ${priorityBadge.color}`}
+                        >
+                          {priorityBadge.label} Priority
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingEnquiry(enq);
+                          }}
+                          className="p-1 rounded-md text-red-600 hover:bg-red-50 border border-red-200"
+                          title="Delete Enquiry"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -918,16 +1000,73 @@ export default function AdminEnquiriesPage() {
             <div className="p-4 border-t border-gray-200 bg-[#FBFBFA] flex items-center justify-between">
               <button
                 type="button"
+                onClick={() => setDeletingEnquiry(selectedEnquiry)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-[12px] font-semibold transition-colors cursor-pointer"
+              >
+                <Trash2 size={14} />
+                <span>Delete Enquiry</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setSelectedEnquiry(null)}
-                className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[13px] font-semibold transition-colors"
+                className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[13px] font-semibold transition-colors cursor-pointer"
               >
                 Close Drawer
               </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-              <span className="text-[11px] text-emerald-700 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Live Database Connected
-              </span>
+      {/* DELETE CONFIRMATION MODAL */}
+      {deletingEnquiry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-red-600 mb-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 className="font-heading font-bold text-[17px] text-foreground">
+                  Confirm Enquiry Deletion
+                </h3>
+                <span className="text-xs text-red-600 font-semibold">PostgreSQL Server Mutation</span>
+              </div>
+            </div>
+
+            <p className="text-[13px] text-gray-600 mb-2 leading-relaxed">
+              Are you sure you want to permanently delete enquiry{' '}
+              <strong className="text-foreground font-semibold">
+                &quot;{deletingEnquiry.referenceNumber}&quot;
+              </strong>{' '}
+              submitted by{' '}
+              <strong className="text-foreground font-semibold">
+                {deletingEnquiry.fullName}
+              </strong>
+              {deletingEnquiry.company ? ` (${deletingEnquiry.company})` : ''}?
+            </p>
+            <p className="text-[12px] text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              This will remove the enquiry and all its logged internal notes permanently from the database.
+            </p>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDeletingEnquiry(null)}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 text-[13px] font-medium cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDelete}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[13px] font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting && <Loader2 size={15} className="animate-spin" />}
+                Yes, Delete Record
+              </button>
             </div>
           </div>
         </div>

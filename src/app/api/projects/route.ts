@@ -109,3 +109,102 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export async function POST(request: Request) {
+  const { getAuthenticatedAdmin } = await import('@/lib/auth');
+  const admin = await getAuthenticatedAdmin();
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const {
+      title,
+      location,
+      district,
+      approximateArea,
+      areaNum,
+      participatingLandowners = 1,
+      status = 'PLANNING',
+      developmentStage = 'PLANNING',
+      progressPercentage = 0,
+      image,
+      description,
+      overview,
+      tags,
+      featured = false,
+      opportunityId,
+    } = body;
+
+    if (!title || !location || !district || !description || !overview) {
+      return NextResponse.json(
+        { error: 'Missing required project fields (title, location, district, description, overview)' },
+        { status: 400 }
+      );
+    }
+
+    // Generate unique slug
+    let baseSlug = title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    if (!baseSlug) baseSlug = `project-${Date.now()}`;
+
+    let slug = baseSlug;
+    let counter = 1;
+    while (await prisma.project.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${counter++}`;
+    }
+
+    const nextId = `PROJ-${Date.now().toString().slice(-4)}`;
+
+    const parsedAreaNum = areaNum !== undefined && areaNum !== null && areaNum !== ''
+      ? parseFloat(String(areaNum))
+      : parseFloat(String(approximateArea || '0').replace(/[^0-9.]/g, '')) || 0;
+
+    const formattedApproxArea = approximateArea || `${parsedAreaNum} Acres`;
+
+    const newProject = await prisma.project.create({
+      data: {
+        id: nextId,
+        title,
+        slug,
+        location,
+        district,
+        approximateArea: formattedApproxArea,
+        areaNum: parsedAreaNum,
+        participatingLandowners: parseInt(String(participatingLandowners), 10) || 1,
+        status: status.toUpperCase().replace(/\s+/g, '_'),
+        developmentStage: developmentStage.toUpperCase().replace(/\s+/g, '_'),
+        progressPercentage: parseInt(String(progressPercentage), 10) || 0,
+        image: image || '/images/projects/kozhikode-hub.jpg',
+        description,
+        overview,
+        tags: Array.isArray(tags) ? JSON.stringify(tags) : (typeof tags === 'string' ? tags : '[]'),
+        featured: Boolean(featured),
+        opportunityId: opportunityId || null,
+      },
+    });
+
+    // Create notification for admin audit
+    await prisma.notification.create({
+      data: {
+        type: 'system',
+        title: 'New Project Created',
+        message: `Project "${title}" (${newProject.id}) was added to the platform.`,
+        reference: newProject.id,
+        read: false,
+      },
+    });
+
+    return NextResponse.json({ success: true, project: newProject }, { status: 201 });
+  } catch (error) {
+    console.error('Create project error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create project in database' },
+      { status: 500 }
+    );
+  }
+}

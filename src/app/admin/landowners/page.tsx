@@ -11,8 +11,9 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-  MoreVertical,
   Calendar,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
 import {
   LandownerLead,
@@ -65,6 +66,27 @@ export default function LandownerLeadsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [deletingLead, setDeletingLead] = useState<LandownerLead | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteLead = async () => {
+    if (!deletingLead) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/landowners/${deletingLead.id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete landowner');
+
+      setLeads((prev) => prev.filter((l) => l.id !== deletingLead.id));
+      setDeletingLead(null);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to delete landowner record');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Load leads on mount from database API with fallback
   useEffect(() => {
@@ -426,10 +448,11 @@ export default function LandownerLeadsPage() {
                       </Link>
                       <button
                         type="button"
-                        aria-label="More actions"
-                        className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                        onClick={() => setDeletingLead(lead)}
+                        className="p-1 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Delete Registration"
                       >
-                        <MoreVertical size={14} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
@@ -467,31 +490,44 @@ export default function LandownerLeadsPage() {
       {/* Mobile Card List View (Mobile screen) */}
       <div className="md:hidden space-y-3">
         {paginatedLeads.map((lead) => (
-          <Link
+          <div
             key={lead.id}
-            href={`/admin/landowners/${lead.id}`}
-            className="block bg-white rounded-[14px] p-4 border border-gray-200/80 shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:border-gray-300 transition-all active:bg-gray-50"
+            className="block bg-white rounded-[14px] p-4 border border-gray-200/80 shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:border-gray-300 transition-all"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="font-mono font-bold text-[13px] text-foreground">
+              <Link
+                href={`/admin/landowners/${lead.id}`}
+                className="font-mono font-bold text-[13px] text-foreground hover:text-primary"
+              >
                 {lead.referenceNumber}
-              </span>
+              </Link>
               <StatusBadge status={lead.status} size="sm" />
             </div>
 
-            <h3 className="text-[15px] font-bold text-foreground">
-              {lead.fullName}
-            </h3>
-
-            <p className="text-[12px] text-gray-500 mt-0.5">
-              {lead.district} • {lead.areaDisplay}
-            </p>
+            <Link href={`/admin/landowners/${lead.id}`}>
+              <h3 className="text-[15px] font-bold text-foreground hover:text-primary">
+                {lead.fullName}
+              </h3>
+              <p className="text-[12px] text-gray-500 mt-0.5">
+                {lead.district} • {lead.areaDisplay}
+              </p>
+            </Link>
 
             <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
               <span>{lead.landownerType}</span>
-              <span>{lead.submittedDate}</span>
+              <div className="flex items-center gap-2">
+                <span>{lead.submittedDate}</span>
+                <button
+                  type="button"
+                  onClick={() => setDeletingLead(lead)}
+                  className="p-1 rounded text-red-600 hover:bg-red-50 border border-red-200"
+                  title="Delete Registration"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
             </div>
-          </Link>
+          </div>
         ))}
 
         {filteredLeads.length === 0 && (
@@ -543,18 +579,17 @@ export default function LandownerLeadsPage() {
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 aria-label="Previous Page"
-                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:not-allowed"
               >
                 <ChevronLeft size={16} />
               </button>
 
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(
-                  (p) =>
-                    p === 1 ||
-                    p === totalPages ||
-                    Math.abs(p - currentPage) <= 1
-                )
+                .filter((p) => {
+                  if (totalPages <= 5) return true;
+                  if (p === 1 || p === totalPages) return true;
+                  return Math.abs(p - currentPage) <= 1;
+                })
                 .map((page, idx, arr) => {
                   const prev = arr[idx - 1];
                   const showEllipsis = prev && page - prev > 1;
@@ -562,7 +597,7 @@ export default function LandownerLeadsPage() {
                   return (
                     <span key={page} className="flex items-center">
                       {showEllipsis && (
-                        <span className="px-1 text-gray-400">...</span>
+                        <span className="px-1 text-gray-300">...</span>
                       )}
                       <button
                         type="button"
@@ -599,6 +634,58 @@ export default function LandownerLeadsPage() {
         onClose={() => setIsManualModalOpen(false)}
         onSuccess={handleLeadCreated}
       />
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {deletingLead && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div
+            className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 space-y-4 animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 className="font-heading font-bold text-[17px] text-foreground">
+                  Confirm Landowner Deletion
+                </h3>
+                <span className="text-xs text-red-600 font-semibold">PostgreSQL Server Mutation</span>
+              </div>
+            </div>
+
+            <p className="text-[13px] text-gray-600 leading-relaxed">
+              Are you sure you want to permanently delete registration{' '}
+              <strong className="text-foreground font-semibold">
+                &quot;{deletingLead.referenceNumber}&quot;
+              </strong>{' '}
+              ({deletingLead.fullName})?
+            </p>
+            <p className="text-[12px] text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              This will permanently remove the landowner, parcels, uploaded documents, and internal audit notes from Supabase PostgreSQL.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={() => setDeletingLead(null)}
+                className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[13px] font-semibold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteLead}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-[13px] font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting && <Loader2 size={15} className="animate-spin" />}
+                Yes, Delete Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
