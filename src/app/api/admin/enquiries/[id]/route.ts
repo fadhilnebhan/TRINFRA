@@ -103,3 +103,46 @@ export async function PATCH(
   }
 }
 
+export async function DELETE(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
+  const admin = await getAuthenticatedAdmin();
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const existing = await prisma.developerEnquiry.findFirst({
+      where: {
+        OR: [{ id: params.id }, { referenceNumber: params.id }],
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Enquiry not found' }, { status: 404 });
+    }
+
+    // Delete any associated notifications referencing this enquiry
+    await prisma.notification.deleteMany({
+      where: { reference: existing.referenceNumber },
+    });
+
+    // Delete enquiry (Prisma schema cascades adminNotes)
+    await prisma.developerEnquiry.delete({
+      where: { id: existing.id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Enquiry ${existing.referenceNumber} deleted successfully.`,
+    });
+  } catch (error) {
+    console.error('Delete enquiry error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete enquiry' },
+      { status: 500 }
+    );
+  }
+}
+
