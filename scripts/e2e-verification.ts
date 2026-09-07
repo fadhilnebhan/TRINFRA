@@ -103,7 +103,7 @@ async function runE2ETests() {
       where: { id: newLandownerId },
       include: { parcels: true }
     });
-    assert(!!dbLandowner, 'New landowner exists in SQLite database');
+    assert(!!dbLandowner, 'New landowner exists in PostgreSQL database');
     assert(dbLandowner!.fullName === 'Ramesh Sundaram', 'Landowner full name persisted accurately');
     assert(dbLandowner!.verificationStatus === 'NEW', 'Landowner initial verificationStatus is NEW');
     assert(dbLandowner!.parcels.length === 1, 'Land parcel created with correct extent');

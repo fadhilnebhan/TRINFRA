@@ -2,26 +2,9 @@ import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
-console.log('🔄 Resetting TRINFRA demo database...');
+console.log('🔄 Resetting TRINFRA demo database (PostgreSQL)...');
 
-// 1. Remove SQLite database file if possible
-const dbPath = path.join(process.cwd(), 'prisma', 'dev.db');
-const dbJournalPath = dbPath + '-journal';
-const dbWalPath = dbPath + '-wal';
-const dbShmPath = dbPath + '-shm';
-
-for (const filePath of [dbJournalPath, dbWalPath, dbShmPath, dbPath]) {
-  if (fs.existsSync(filePath)) {
-    try {
-      fs.unlinkSync(filePath);
-      console.log(`🗑️ Removed ${path.basename(filePath)}`);
-    } catch {
-      console.warn(`⚠️ Could not delete ${path.basename(filePath)} (may be locked by running server).`);
-    }
-  }
-}
-
-// 2. Clean private document storage
+// 1. Clean private document storage (preserving .gitkeep)
 const storagePath = path.join(process.cwd(), 'storage', 'documents');
 if (fs.existsSync(storagePath)) {
   const files = fs.readdirSync(storagePath);
@@ -49,19 +32,23 @@ if (!fs.existsSync(gitkeepPath)) {
   fs.writeFileSync(gitkeepPath, '');
 }
 
-// 3. Push schema (creates fresh dev.db if deleted, or syncs if still exists)
-console.log('📦 Pushing Prisma schema to SQLite...');
-execSync('npx prisma db push --skip-generate', { stdio: 'inherit' });
+// 2. Push schema to PostgreSQL if needed
+console.log('📦 Syncing Prisma schema with PostgreSQL database...');
+try {
+  execSync('npx prisma db push --skip-generate', { stdio: 'inherit' });
+} catch (err) {
+  console.warn('⚠️ Prisma db push notice:', err);
+}
 
-// 4. Generate Prisma client (optional — may fail if dev server has DLL locked)
+// 3. Generate Prisma client
 try {
   console.log('⚙️ Generating Prisma client...');
   execSync('npx prisma generate', { stdio: 'inherit' });
 } catch {
-  console.warn('⚠️ Prisma generate skipped (query engine locked by running server). Client is already up to date.');
+  console.warn('⚠️ Prisma generate skipped or already up to date.');
 }
 
-// 5. Seed demo data
+// 4. Seed fresh demo data
 console.log('🌱 Seeding fresh demo data...');
 execSync('npx tsx prisma/seed.ts', { stdio: 'inherit' });
 

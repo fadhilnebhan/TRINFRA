@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -35,8 +35,24 @@ export default function OpportunityDetail({
   opportunityId,
 }: OpportunityDetailProps) {
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
+  const [opportunity, setOpportunity] = useState(getOpportunityById(opportunityId));
 
-  const opportunity = getOpportunityById(opportunityId);
+  useEffect(() => {
+    async function fetchLiveOpportunity() {
+      try {
+        const res = await fetch(`/api/opportunities/${encodeURIComponent(opportunityId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.opportunity) {
+            setOpportunity(data.opportunity);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch opportunity from database API:', err);
+      }
+    }
+    fetchLiveOpportunity();
+  }, [opportunityId]);
 
   if (!opportunity) {
     return (

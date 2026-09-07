@@ -1,11 +1,63 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Activity, FileText, Building2, ShieldCheck } from 'lucide-react';
-import { getActivities, ActivityItem } from '@/lib/adminData';
+import { ActivityItem } from '@/lib/adminData';
+
+interface ApiNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  reference?: string;
+  read: boolean;
+  createdAt: string;
+}
 
 export default function AdminActivityPage() {
-  const activities = getActivities();
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadActivities() {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/notifications');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.notifications && data.notifications.length > 0) {
+            const mapped: ActivityItem[] = data.notifications.map((n: ApiNotification) => {
+              const dt = new Date(n.createdAt);
+              const relativeTime = !isNaN(dt.getTime())
+                ? dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                : 'Recent';
+
+              return {
+                id: n.id,
+                type: (n.type as ActivityItem['type']) || 'registration_received',
+                title: n.title,
+                reference: n.reference || '',
+                timestamp: n.createdAt,
+                relativeTime,
+                details: n.message,
+              };
+            });
+            setActivities(mapped);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load notifications from database:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadActivities();
+  }, []);
 
   const getActivityIcon = (type: ActivityItem['type']) => {
     switch (type) {
@@ -57,41 +109,47 @@ export default function AdminActivityPage() {
 
       <div className="bg-white rounded-[16px] p-6 border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-4">
         <h3 className="font-bold text-[15px] text-foreground border-b border-gray-100 pb-3">
-          Chronological Event Stream
+          Chronological Event Stream {activities.length > 0 && `(${activities.length})`}
         </h3>
 
-        <div className="divide-y divide-gray-100">
-          {activities.map((act) => {
-            const { icon: Icon, bg } = getActivityIcon(act.type);
+        {loading ? (
+          <div className="py-8 text-center text-sm text-gray-400">Loading activity stream...</div>
+        ) : activities.length === 0 ? (
+          <div className="py-8 text-center text-sm text-gray-400">No events recorded in database yet.</div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {activities.map((act) => {
+              const { icon: Icon, bg } = getActivityIcon(act.type);
 
-            return (
-              <div
-                key={act.id}
-                className="py-3.5 flex items-start justify-between gap-4"
-              >
-                <div className="flex items-start gap-3.5">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0 mt-0.5 ${bg}`}
-                  >
-                    <Icon size={16} />
+              return (
+                <div
+                  key={act.id}
+                  className="py-3.5 flex items-start justify-between gap-4"
+                >
+                  <div className="flex items-start gap-3.5">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center border shrink-0 mt-0.5 ${bg}`}
+                    >
+                      <Icon size={16} />
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-bold text-foreground">
+                        {act.title}
+                      </p>
+                      <p className="text-[12px] font-mono text-gray-400 mt-0.5">
+                        {act.reference} {act.details && `• ${act.details}`}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[14px] font-bold text-foreground">
-                      {act.title}
-                    </p>
-                    <p className="text-[12px] font-mono text-gray-400 mt-0.5">
-                      {act.reference} {act.details && `• ${act.details}`}
-                    </p>
-                  </div>
+
+                  <span className="text-[12px] text-gray-400 shrink-0">
+                    {act.relativeTime}
+                  </span>
                 </div>
-
-                <span className="text-[12px] text-gray-400 shrink-0">
-                  {act.relativeTime}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

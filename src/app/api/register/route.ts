@@ -3,6 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Generate sequential or timestamped reference number: TRI-2026-XXXXX
 async function generateLandownerRef(): Promise<string> {
   const count = await prisma.landowner.count();
@@ -49,10 +52,16 @@ export async function POST(request: Request) {
     const areaValue = parseFloat(approximateArea) || 0;
     const refNumber = await generateLandownerRef();
 
-    // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), 'storage', 'documents');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    // Ensure upload directory exists (using /tmp on Vercel serverless where repo fs is read-only)
+    const uploadDir = process.env.VERCEL
+      ? path.join('/tmp', 'storage', 'documents')
+      : path.join(process.cwd(), 'storage', 'documents');
+    try {
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+    } catch (e) {
+      console.warn('Upload directory creation note:', e);
     }
 
     // Database transaction: create landowner, parcel, documents, and admin notification
@@ -99,12 +108,16 @@ export async function POST(request: Request) {
           const fileId = `${landowner.id}_${Date.now()}_${safeName}`;
           const filePath = path.join(uploadDir, fileId);
 
-          if (doc.dataUri && doc.dataUri.includes(',')) {
-            const base64Data = doc.dataUri.split(',')[1];
-            fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
-          } else {
-            // Write placeholder record for demo
-            fs.writeFileSync(filePath, Buffer.from('TRINFRA Protected Document Record'));
+          try {
+            if (doc.dataUri && doc.dataUri.includes(',')) {
+              const base64Data = doc.dataUri.split(',')[1];
+              fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
+            } else {
+              // Write placeholder record for demo
+              fs.writeFileSync(filePath, Buffer.from('TRINFRA Protected Document Record'));
+            }
+          } catch (writeErr) {
+            console.warn('Document file write note (ephemeral filesystem):', writeErr);
           }
 
           await tx.document.create({

@@ -1,11 +1,10 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { Users, FileText, Clock, Building2 } from 'lucide-react';
 import {
-  getAllLandowners,
-  getAdminDashboardStats,
-  getActivities,
   SEED_DEVELOPER_ENQUIRIES,
   LandownerLead,
   ActivityItem,
@@ -46,7 +45,7 @@ export default function AdminOverviewPage() {
           if (data.stats) {
             setStats(data.stats);
           }
-          if (data.recentRegistrations && data.recentRegistrations.length > 0) {
+          if (data.recentRegistrations) {
             const mappedLeads: LandownerLead[] = data.recentRegistrations.map((lo: ApiLandowner) => ({
               id: lo.id,
               referenceNumber: lo.referenceNumber,
@@ -83,10 +82,10 @@ export default function AdminOverviewPage() {
             }));
             setLeads(mappedLeads);
           }
-          if (data.recentEnquiries && data.recentEnquiries.length > 0) {
+          if (data.recentEnquiries) {
             setEnquiries(data.recentEnquiries);
           }
-          if (data.activities && data.activities.length > 0) {
+          if (data.activities) {
             const mappedActs: ActivityItem[] = data.activities.map((a: ApiActivity) => ({
               id: a.id,
               type: a.type || 'registration_received',
@@ -103,18 +102,7 @@ export default function AdminOverviewPage() {
       } catch (err) {
         console.error('Error fetching admin dashboard data:', err);
       }
-
-      // Fallback
-      setLeads(getAllLandowners());
-      setActivities(getActivities());
-      const loadedStats = getAdminDashboardStats();
-      setStats({
-        totalLandownersDisplay: loadedStats.totalLandownersDisplay,
-        newRegistrations: loadedStats.newRegistrations,
-        verificationPending: loadedStats.verificationPending,
-        developerEnquiries: loadedStats.developerEnquiries,
-      });
-    }
+    };
 
     loadData();
   }, []);

@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
@@ -13,7 +15,6 @@ import {
   Calendar,
 } from 'lucide-react';
 import {
-  getAllLandowners,
   LandownerLead,
   LandownerStatus,
   LandownerType,
@@ -72,7 +73,7 @@ export default function LandownerLeadsPage() {
         const res = await fetch('/api/admin/landowners');
         if (res.ok) {
           const data = await res.json();
-          if (data.landowners && data.landowners.length > 0) {
+          if (data.landowners) {
             const mapped: LandownerLead[] = data.landowners.map((lo: ApiLandowner) => ({
               id: lo.id,
               referenceNumber: lo.referenceNumber,
@@ -114,8 +115,7 @@ export default function LandownerLeadsPage() {
       } catch (err) {
         console.error('Error fetching landowners from database:', err);
       }
-      setLeads(getAllLandowners());
-    }
+    };
 
     fetchLandowners();
   }, []);

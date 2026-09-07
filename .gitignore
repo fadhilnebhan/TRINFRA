@@ -30,7 +30,8 @@ yarn-error.log*
 .env*.local
 !.env.example
 
-# SQLite database (track dev.db for zero-budget deployment demo)
+# Database files
+prisma/*.db
 prisma/*.db-journal
 prisma/*.db-wal
 prisma/*.db-shm
@@ -47,3 +48,6 @@ storage/documents/*
 *.tsbuildinfo
 next-env.d.ts
 
+
+.vercel
+.env*

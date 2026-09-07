@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,19 +19,39 @@ import {
 import CustomSelect from '@/components/opportunities/CustomSelect';
 import {
   PROJECTS,
+  Project,
   ProjectStatus,
-  getFeaturedProject,
 } from '@/lib/projectsData';
 
 export default function ProjectsPageView() {
+  const [projectsList, setProjectsList] = useState<Project[]>(PROJECTS);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [activeMapDistrict, setActiveMapDistrict] = useState<string | null>(null);
 
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        const res = await fetch('/api/projects');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.projects && data.projects.length > 0) {
+            setProjectsList(data.projects);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load projects from database API, using initial state:', err);
+      }
+    }
+    loadProjects();
+  }, []);
+
   const gridSectionRef = useRef<HTMLDivElement>(null);
-  const featured = getFeaturedProject() || PROJECTS[0];
+  const featured = useMemo(() => {
+    return projectsList.find((p) => p.featured) || projectsList[0] || PROJECTS[0];
+  }, [projectsList]);
 
   const scrollToGrid = () => {
     gridSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -66,7 +86,7 @@ export default function ProjectsPageView() {
   ];
 
   const filteredProjects = useMemo(() => {
-    return PROJECTS.filter((project) => {
+    return projectsList.filter((project) => {
       // Search
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -96,7 +116,7 @@ export default function ProjectsPageView() {
 
       return true;
     });
-  }, [searchQuery, selectedStatus, selectedDistrict, selectedStage]);
+  }, [projectsList, searchQuery, selectedStatus, selectedDistrict, selectedStage]);
 
   const hasActiveFilters =
     searchQuery.trim() !== '' ||

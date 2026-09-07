@@ -4,7 +4,9 @@ import path from 'path';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedAdmin } from '@/lib/auth';
 
-const UPLOAD_DIR = path.join(process.cwd(), 'storage', 'documents');
+const UPLOAD_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'storage', 'documents')
+  : path.join(process.cwd(), 'storage', 'documents');
 
 export const dynamic = 'force-dynamic';
 
@@ -85,8 +87,12 @@ export async function POST(request: Request) {
     }
 
     // Ensure local private storage directory exists
-    if (!fs.existsSync(UPLOAD_DIR)) {
-      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    try {
+      if (!fs.existsSync(UPLOAD_DIR)) {
+        fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+      }
+    } catch (e) {
+      console.warn('Storage directory creation warning:', e);
     }
 
     const originalName = file.name || 'document.pdf';
@@ -95,9 +101,13 @@ export async function POST(request: Request) {
     const storedFileName = `${timestamp}_${sanitizedName}`;
     const filePath = path.join(UPLOAD_DIR, storedFileName);
 
-    // Write file to local disk
-    const buffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(filePath, buffer);
+    // Write file to local disk (ephemeral storage on serverless)
+    try {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      fs.writeFileSync(filePath, buffer);
+    } catch (writeErr) {
+      console.warn('Document write warning (serverless filesystem):', writeErr);
+    }
 
     // Save metadata to database
     const document = await prisma.document.create({

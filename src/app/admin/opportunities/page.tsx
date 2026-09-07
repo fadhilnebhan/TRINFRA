@@ -1,10 +1,36 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { OPPORTUNITIES } from '@/lib/opportunitiesData';
+import { OPPORTUNITIES, Opportunity } from '@/lib/opportunitiesData';
 
 export default function AdminOpportunitiesPage() {
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(OPPORTUNITIES);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadOpportunities() {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/opportunities');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.opportunities && data.opportunities.length > 0) {
+            setOpportunities(data.opportunities);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load opportunities from database:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadOpportunities();
+  }, []);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <div>
@@ -30,8 +56,9 @@ export default function AdminOpportunitiesPage() {
       <div className="bg-white rounded-[16px] border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
           <h3 className="font-bold text-[15px] text-foreground">
-            Current Opportunities ({OPPORTUNITIES.length})
+            Current Opportunities ({opportunities.length})
           </h3>
+          {loading && <span className="text-xs text-gray-400">Syncing with database...</span>}
         </div>
 
         <div className="overflow-x-auto">
@@ -46,7 +73,7 @@ export default function AdminOpportunitiesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-[13px]">
-              {OPPORTUNITIES.map((opp) => (
+              {opportunities.map((opp) => (
                 <tr key={opp.id} className="hover:bg-gray-50/70 transition-colors">
                   <td className="py-3.5 px-4 font-bold text-foreground">
                     {opp.title}

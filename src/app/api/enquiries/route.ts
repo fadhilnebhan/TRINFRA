@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function generateEnquiryRef(): Promise<string> {
   const count = await prisma.developerEnquiry.count();
   const nextNum = (count + 1).toString().padStart(5, '0');

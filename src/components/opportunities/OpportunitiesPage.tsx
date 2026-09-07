@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -13,9 +13,7 @@ import {
 } from 'lucide-react';
 import {
   OPPORTUNITIES,
-  filterOpportunities,
-  getOpportunityDistricts,
-  getOpportunityLocalities,
+  Opportunity,
 } from '@/lib/opportunitiesData';
 import OpportunityCard from './OpportunityCard';
 import CustomSelect from './CustomSelect';
@@ -43,6 +41,7 @@ const SORT_OPTIONS = [
 const ITEMS_PER_PAGE = 6;
 
 export default function OpportunitiesPage() {
+  const [opportunitiesList, setOpportunitiesList] = useState<Opportunity[]>(OPPORTUNITIES);
   const [district, setDistrict] = useState('');
   const [locality, setLocality] = useState('');
   const [areaRange, setAreaRange] = useState('');
@@ -58,20 +57,39 @@ export default function OpportunitiesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<'latest' | 'area'>('latest');
 
-  const districts = getOpportunityDistricts();
+  useEffect(() => {
+    async function loadOpportunities() {
+      try {
+        const res = await fetch('/api/opportunities');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.opportunities && data.opportunities.length > 0) {
+            setOpportunitiesList(data.opportunities);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load opportunities from database API, using initial state:', err);
+      }
+    }
+    loadOpportunities();
+  }, []);
+
+  const districts = useMemo(() => {
+    return Array.from(new Set(opportunitiesList.map((o) => o.district))).sort();
+  }, [opportunitiesList]);
 
   const availableLocalities = useMemo(() => {
     if (district) {
       return Array.from(
         new Set(
-          OPPORTUNITIES.filter((o) => o.district === district).map(
-            (o) => o.locality
-          )
+          opportunitiesList
+            .filter((o) => o.district === district)
+            .map((o) => o.locality)
         )
       ).sort();
     }
-    return getOpportunityLocalities();
-  }, [district]);
+    return Array.from(new Set(opportunitiesList.map((o) => o.locality))).sort();
+  }, [district, opportunitiesList]);
 
   const districtOptions = useMemo(
     () => [
@@ -92,9 +110,9 @@ export default function OpportunitiesPage() {
   const handleDistrictChange = (newDistrict: string) => {
     setDistrict(newDistrict);
     if (newDistrict) {
-      const validLocalities = OPPORTUNITIES.filter(
-        (o) => o.district === newDistrict
-      ).map((o) => o.locality);
+      const validLocalities = opportunitiesList
+        .filter((o) => o.district === newDistrict)
+        .map((o) => o.locality);
       if (locality && !validLocalities.includes(locality)) {
         setLocality('');
       }
@@ -102,12 +120,26 @@ export default function OpportunitiesPage() {
   };
 
   const filteredOpportunities = useMemo(() => {
-    let results = filterOpportunities({
-      district: appliedFilters.district,
-      locality: appliedFilters.locality,
-      areaRange: appliedFilters.areaRange,
-      status: appliedFilters.status,
-      search: appliedFilters.search,
+    let results = opportunitiesList.filter((opp) => {
+      if (appliedFilters.district && opp.district !== appliedFilters.district) return false;
+      if (appliedFilters.locality && opp.locality !== appliedFilters.locality) return false;
+      if (appliedFilters.status && opp.status !== appliedFilters.status) return false;
+      if (appliedFilters.areaRange) {
+        if (appliedFilters.areaRange === 'under-50' && opp.area >= 50) return false;
+        if (appliedFilters.areaRange === '50-100' && (opp.area < 50 || opp.area > 100)) return false;
+        if (appliedFilters.areaRange === '100-200' && (opp.area < 100 || opp.area > 200)) return false;
+        if (appliedFilters.areaRange === 'above-200' && opp.area <= 200) return false;
+      }
+      if (appliedFilters.search) {
+        const q = appliedFilters.search.toLowerCase();
+        const match =
+          opp.title.toLowerCase().includes(q) ||
+          opp.location.toLowerCase().includes(q) ||
+          opp.district.toLowerCase().includes(q) ||
+          opp.locality.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      return true;
     });
 
     if (sortOrder === 'area') {
@@ -115,7 +147,7 @@ export default function OpportunitiesPage() {
     }
 
     return results;
-  }, [appliedFilters, sortOrder]);
+  }, [opportunitiesList, appliedFilters, sortOrder]);
 
   const totalPages = Math.ceil(filteredOpportunities.length / ITEMS_PER_PAGE);
   const paginatedOpportunities = filteredOpportunities.slice(
