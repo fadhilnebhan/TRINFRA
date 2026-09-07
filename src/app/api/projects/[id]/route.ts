@@ -28,7 +28,15 @@ export async function GET(
     });
 
     if (!proj) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Project not found' },
+        {
+          status: 404,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+        }
+      );
     }
 
     let parsedTags: string[] = [];
@@ -80,10 +88,17 @@ export async function GET(
       updatedAt: proj.updatedAt ? proj.updatedAt.toISOString().split('T')[0] : '2026-08-15',
     };
 
-    return NextResponse.json({
-      success: true,
-      project: formatted,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        project: formatted,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   } catch (error) {
     console.error('Project detail API error:', error);
     return NextResponse.json(

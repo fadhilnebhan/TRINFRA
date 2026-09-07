@@ -73,6 +73,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           opportunityId={opp ? opp.id : mappedOppId}
           initialOpportunity={opp}
           relatedOpportunities={relatedOpps}
+          projectId={params.id}
         />
       </main>
       <Footer />

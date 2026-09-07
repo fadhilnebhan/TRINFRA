@@ -97,11 +97,18 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({
-      success: true,
-      projects: formatted,
-      count: formatted.length,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        projects: formatted,
+        count: formatted.length,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   } catch (error) {
     console.error('Projects GET API error:', error);
     return NextResponse.json(

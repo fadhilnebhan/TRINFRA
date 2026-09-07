@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { MapPin, ArrowRight, Map as MapIcon, FolderSearch } from 'lucide-react';
 import type { Opportunity } from '@/lib/opportunitiesData';
+import { useLiveDataSync } from '@/hooks/useLiveDataSync';
 
 interface FeaturedOpportunitiesProps {
   opportunities?: Opportunity[];
@@ -11,6 +13,28 @@ interface FeaturedOpportunitiesProps {
 export default function FeaturedOpportunities({
   opportunities = [],
 }: FeaturedOpportunitiesProps) {
+  const [items, setItems] = useState<Opportunity[]>(opportunities);
+
+  useLiveDataSync<Opportunity[]>({
+    initialData: opportunities.length > 0 ? opportunities : null,
+    fetcher: async (signal) => {
+      const res = await fetch('/api/opportunities', {
+        cache: 'no-store',
+        signal,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.opportunities)) {
+          return data.opportunities.slice(0, 3);
+        }
+      }
+      return null;
+    },
+    onData: (freshOpps) => {
+      setItems(freshOpps);
+    },
+    intervalMs: 10000,
+  });
   return (
     <section id="opportunities" className="py-12 pb-20 md:pb-24 bg-background">
       <div className="max-w-[1360px] mx-auto px-5 sm:px-8 md:px-12 lg:px-16">
@@ -32,7 +56,7 @@ export default function FeaturedOpportunities({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Cards Column */}
           <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {opportunities.length === 0 ? (
+            {items.length === 0 ? (
               <div className="col-span-full bg-white rounded-[20px] border border-gray-100 p-8 sm:p-12 text-center flex flex-col items-center justify-center min-h-[280px]">
                 <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
                   <FolderSearch size={24} />
@@ -49,7 +73,7 @@ export default function FeaturedOpportunities({
                 </Link>
               </div>
             ) : (
-              opportunities.slice(0, 3).map((opportunity) => (
+              items.map((opportunity) => (
                 <div
                   key={opportunity.id}
                   className="flex flex-col bg-white rounded-[20px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"

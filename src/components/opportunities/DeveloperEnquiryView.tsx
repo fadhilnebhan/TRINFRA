@@ -25,6 +25,7 @@ import {
 import {
   type Opportunity,
 } from '@/lib/opportunitiesData';
+import { useLiveDataSync } from '@/hooks/useLiveDataSync';
 import {
   submitInvestorEnquiry,
   type EnquiryDraft,
@@ -70,64 +71,89 @@ const LOCATION_OPTIONS: SelectOption[] = [
   { value: 'other', label: 'Other' },
 ];
 
-const DEFAULT_OPPORTUNITY: Opportunity = {
-  id: 'OPP-1',
-  title: 'Kozhikode North',
-  location: 'Kozhikode, Kerala',
-  district: 'Kozhikode',
-  locality: 'Vadakara',
-  area: 125,
-  areaUnit: 'Acres',
-  landowners: 18,
-  status: 'In Progress',
-  image: '/images/houses_tropical.jpeg',
-  shortDescription: 'Strategic location with strong development potential.',
-  overview: '',
-  highlights: [],
-  developmentPotential: '',
-  currentStatusDetail: '',
-  coordinates: { lat: 11.35, lng: 75.78 },
-};
-
 export default function DeveloperEnquiryView({
   initialOpportunityId = 'OPP-1',
   initialOpportunity = null,
   opportunitiesList = [],
 }: DeveloperEnquiryViewProps) {
   const [opportunities, setOpportunities] = useState<Opportunity[]>(opportunitiesList);
+  const [isOpportunityUnavailable, setIsOpportunityUnavailable] = useState(false);
 
-  useEffect(() => {
-    if (opportunitiesList && opportunitiesList.length > 0) {
-      setOpportunities(opportunitiesList);
-      return;
-    }
-    fetch('/api/opportunities')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data.opportunities)) {
-          setOpportunities(data.opportunities);
-        }
-      })
-      .catch(() => {});
-  }, [opportunitiesList]);
-
-  // Resolve initial opportunity
+  // Resolve initial opportunity without hardcoded fake data
   const initialOpp = useMemo(() => {
     if (initialOpportunity) return initialOpportunity;
     return (
       opportunities.find((o) => o.id === initialOpportunityId) ||
       opportunities[0] ||
-      DEFAULT_OPPORTUNITY
+      null
     );
   }, [initialOpportunity, initialOpportunityId, opportunities]);
 
-  const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity>(initialOpp);
+  const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(initialOpp);
 
   useEffect(() => {
-    if (initialOpp) {
-      setSelectedOpportunity((prev) => (prev.id === DEFAULT_OPPORTUNITY.id ? initialOpp : prev));
+    if (initialOpp && !selectedOpportunity) {
+      setSelectedOpportunity(initialOpp);
     }
-  }, [initialOpp]);
+  }, [initialOpp, selectedOpportunity]);
+
+  // Live check active opportunity in PostgreSQL
+  useLiveDataSync<Opportunity | null>({
+    initialData: selectedOpportunity,
+    enabled: !!selectedOpportunity?.id,
+    fetcher: async (signal) => {
+      if (!selectedOpportunity?.id) return null;
+      const res = await fetch(`/api/opportunities/${encodeURIComponent(selectedOpportunity.id)}`, {
+        cache: 'no-store',
+        signal,
+      });
+      if (res.status === 404) {
+        return null;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        return data.opportunity ?? null;
+      }
+      return null;
+    },
+    onData: (freshOpp) => {
+      if (freshOpp === null) {
+        setIsOpportunityUnavailable(true);
+      } else {
+        setIsOpportunityUnavailable(false);
+        setSelectedOpportunity(freshOpp);
+      }
+    },
+    onNotFound: () => {
+      setIsOpportunityUnavailable(true);
+    },
+    intervalMs: 10000,
+  });
+
+  // Live check all opportunities list for switcher modal
+  useLiveDataSync<Opportunity[]>({
+    initialData: opportunitiesList.length > 0 ? opportunitiesList : null,
+    fetcher: async (signal) => {
+      const res = await fetch('/api/opportunities', {
+        cache: 'no-store',
+        signal,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.opportunities)) {
+          return data.opportunities;
+        }
+      }
+      return null;
+    },
+    onData: (freshOpportunities) => {
+      setOpportunities(freshOpportunities);
+      if (selectedOpportunity && !freshOpportunities.some((o) => o.id === selectedOpportunity.id)) {
+        setIsOpportunityUnavailable(true);
+      }
+    },
+    intervalMs: 12000,
+  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -181,6 +207,11 @@ export default function DeveloperEnquiryView({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const opp = selectedOpportunity;
+    if (isOpportunityUnavailable || !opp) {
+      setErrors({ general: 'This opportunity is no longer available in the database. Enquiries cannot be submitted.' });
+      return;
+    }
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -208,13 +239,13 @@ export default function DeveloperEnquiryView({
       phone: phone.trim(),
       role,
       interest: interestKey,
-      opportunityId: selectedOpportunity.id,
-      opportunityTitle: selectedOpportunity.title,
+      opportunityId: opp.id,
+      opportunityTitle: opp.title,
       investmentRange: rangeLabel,
       preferredContactMethod: contactMethod,
       preferredLocation: locLabel,
       interestType: interestLabel,
-      message: message.trim() || `Interest expressed in ${selectedOpportunity.title} as ${userType}.`,
+      message: message.trim() || `Interest expressed in ${opp.title} as ${userType}.`,
     };
 
     const sendEnquiry = async () => {
@@ -326,68 +357,91 @@ export default function DeveloperEnquiryView({
                 </button>
               </div>
 
-              {/* Opportunity Preview Image */}
-              <div className="relative rounded-[14px] overflow-hidden aspect-[16/9] mb-4 group">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={selectedOpportunity.image}
-                  alt={selectedOpportunity.title}
-                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
-
-                {/* Status Badge */}
-                <div className="absolute top-3 left-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#0E2115]/90 text-white backdrop-blur-sm shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#BD9655]" />
-                    {selectedOpportunity.status}
-                  </span>
+              {isOpportunityUnavailable || !selectedOpportunity ? (
+                <div className="py-6 px-4 rounded-xl bg-amber-50/70 border border-amber-200 text-center">
+                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 mx-auto mb-2 font-bold text-lg">
+                    ⚠️
+                  </div>
+                  <h3 className="text-[16px] font-bold text-amber-900 mb-1">
+                    Opportunity No Longer Available
+                  </h3>
+                  <p className="text-[12px] text-amber-700 mb-4">
+                    This opportunity has been removed from the database or closed.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                    className="inline-block px-4 py-2 rounded-lg bg-[#0E2115] text-white text-[12px] font-bold hover:bg-[#1a3824] transition-colors"
+                  >
+                    Select Active Opportunity
+                  </button>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Opportunity Preview Image */}
+                  <div className="relative rounded-[14px] overflow-hidden aspect-[16/9] mb-4 group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={selectedOpportunity.image || '/images/houses_tropical.jpeg'}
+                      alt={selectedOpportunity.title}
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
 
-              {/* Opportunity Info */}
-              <div>
-                <h3 className="text-[20px] font-heading font-extrabold text-foreground">
-                  {selectedOpportunity.title}
-                </h3>
-                <div className="flex items-center gap-1 text-[13px] text-gray-500 mt-1">
-                  <MapPin size={14} className="text-[#BD9655] shrink-0" />
-                  <span>{selectedOpportunity.location}</span>
-                </div>
-
-                {/* 3 Metrics Row */}
-                <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-gray-100 text-center">
-                  <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-1 text-gray-400 mb-1">
-                      <BookOpen size={15} className="text-[#BD9655]" />
+                    {/* Status Badge */}
+                    <div className="absolute top-3 left-3">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#0E2115]/90 text-white backdrop-blur-sm shadow-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#BD9655]" />
+                        {selectedOpportunity.status}
+                      </span>
                     </div>
-                    <span className="font-heading font-extrabold text-[16px] text-foreground">
-                      {selectedOpportunity.area}
-                    </span>
-                    <span className="text-[11px] text-gray-500 font-medium">Acres</span>
                   </div>
 
-                  <div className="flex flex-col items-center border-x border-gray-100">
-                    <div className="flex items-center gap-1 text-gray-400 mb-1">
-                      <Users size={15} className="text-[#BD9655]" />
+                  {/* Opportunity Info */}
+                  <div>
+                    <h3 className="text-[20px] font-heading font-extrabold text-foreground">
+                      {selectedOpportunity.title}
+                    </h3>
+                    <div className="flex items-center gap-1 text-[13px] text-gray-500 mt-1">
+                      <MapPin size={14} className="text-[#BD9655] shrink-0" />
+                      <span>{selectedOpportunity.location}</span>
                     </div>
-                    <span className="font-heading font-extrabold text-[16px] text-foreground">
-                      {selectedOpportunity.landowners}
-                    </span>
-                    <span className="text-[11px] text-gray-500 font-medium">Landowners</span>
-                  </div>
 
-                  <div className="flex flex-col items-center">
-                    <div className="flex items-center gap-1 text-gray-400 mb-1">
-                      <TrendingUp size={15} className="text-[#BD9655]" />
+                    {/* 3 Metrics Row */}
+                    <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-gray-100 text-center">
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-1 text-gray-400 mb-1">
+                          <BookOpen size={15} className="text-[#BD9655]" />
+                        </div>
+                        <span className="font-heading font-extrabold text-[16px] text-foreground">
+                          {selectedOpportunity.area}
+                        </span>
+                        <span className="text-[11px] text-gray-500 font-medium">Acres</span>
+                      </div>
+
+                      <div className="flex flex-col items-center border-x border-gray-100">
+                        <div className="flex items-center gap-1 text-gray-400 mb-1">
+                          <Users size={15} className="text-[#BD9655]" />
+                        </div>
+                        <span className="font-heading font-extrabold text-[16px] text-foreground">
+                          {selectedOpportunity.landowners}
+                        </span>
+                        <span className="text-[11px] text-gray-500 font-medium">Landowners</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-1 text-gray-400 mb-1">
+                          <TrendingUp size={15} className="text-[#BD9655]" />
+                        </div>
+                        <span className="font-heading font-extrabold text-[14px] text-foreground truncate max-w-full">
+                          {selectedOpportunity.status}
+                        </span>
+                        <span className="text-[11px] text-gray-500 font-medium">Status</span>
+                      </div>
                     </div>
-                    <span className="font-heading font-extrabold text-[14px] text-foreground truncate max-w-full">
-                      {selectedOpportunity.status}
-                    </span>
-                    <span className="text-[11px] text-gray-500 font-medium">Status</span>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
 
             {/* Card 2: Why connect with TRINFRA? */}
@@ -500,7 +554,7 @@ export default function DeveloperEnquiryView({
                 <p className="mt-3 text-[15px] text-gray-600 max-w-md mx-auto leading-relaxed">
                   Thank you for your interest in{' '}
                   <span className="font-semibold text-foreground">
-                    {selectedOpportunity.title}
+                    {selectedOpportunity?.title || 'Selected Opportunity'}
                   </span>
                   . Our team will review your enquiry and contact you shortly.
                 </p>
@@ -519,7 +573,7 @@ export default function DeveloperEnquiryView({
                 <div className="mt-6 pt-6 border-t border-gray-100 max-w-md mx-auto text-left text-[13px] space-y-2 text-gray-600">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Opportunity:</span>
-                    <span className="font-semibold text-foreground">{selectedOpportunity.title}</span>
+                    <span className="font-semibold text-foreground">{selectedOpportunity?.title || 'Selected Opportunity'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Role:</span>
@@ -559,6 +613,37 @@ export default function DeveloperEnquiryView({
                 </h2>
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-8">
+                  {isOpportunityUnavailable || !selectedOpportunity ? (
+                    <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 flex items-start gap-3.5">
+                      <span className="text-2xl shrink-0">⚠️</span>
+                      <div>
+                        <h3 className="font-heading font-extrabold text-[15px] text-amber-900">
+                          This Opportunity is No Longer Available
+                        </h3>
+                        <p className="text-[13px] text-amber-800 mt-1 leading-relaxed">
+                          The opportunity you are inquiring about has been removed or closed in the database.
+                          Submission of new enquiries for this record is disabled.
+                        </p>
+                        <div className="mt-3 flex items-center gap-4">
+                          <Link
+                            href="/opportunities"
+                            className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#0E2115] hover:underline"
+                          >
+                            <span>Browse Active Opportunities</span>
+                            <ArrowRight size={13} />
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => setIsModalOpen(true)}
+                            className="text-[13px] font-bold text-[#BD9655] hover:underline cursor-pointer"
+                          >
+                            Select Different Opportunity
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
                   {/* ================= 1. I AM A ================= */}
                   <div className="space-y-3">
                     <label className="block text-[14px] font-bold text-foreground">
@@ -961,8 +1046,8 @@ export default function DeveloperEnquiryView({
                   <div className="space-y-4 pt-2">
                     <button
                       type="submit"
-                      disabled={isSubmitting}
-                      className="w-full bg-[#0E2115] hover:bg-[#132c1c] text-white py-3.5 px-6 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 shadow-sm transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed group cursor-pointer"
+                      disabled={isSubmitting || isOpportunityUnavailable || !selectedOpportunity}
+                      className="w-full bg-[#0E2115] hover:bg-[#132c1c] text-white py-3.5 px-6 rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
                     >
                       {isSubmitting ? (
                         <>

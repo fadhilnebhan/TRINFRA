@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,6 +21,7 @@ import {
   Project,
   ProjectStatus,
 } from '@/lib/projectsData';
+import { useLiveDataSync } from '@/hooks/useLiveDataSync';
 
 interface ProjectsPageViewProps {
   initialProjects?: Project[];
@@ -34,22 +35,26 @@ export default function ProjectsPageView({ initialProjects }: ProjectsPageViewPr
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [activeMapDistrict, setActiveMapDistrict] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadProjects() {
-      try {
-        const res = await fetch('/api/projects');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.projects)) {
-            setProjectsList(data.projects);
-          }
+  useLiveDataSync<Project[]>({
+    initialData: initialProjects || null,
+    fetcher: async (signal) => {
+      const res = await fetch('/api/projects', {
+        cache: 'no-store',
+        signal,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.projects)) {
+          return data.projects;
         }
-      } catch (err) {
-        console.warn('Could not load projects from database API:', err);
       }
-    }
-    loadProjects();
-  }, []);
+      return null;
+    },
+    onData: (freshProjects) => {
+      setProjectsList(freshProjects);
+    },
+    intervalMs: 10000,
+  });
 
   const gridSectionRef = useRef<HTMLDivElement>(null);
   const featured = useMemo(() => {
@@ -433,9 +438,14 @@ export default function ProjectsPageView({ initialProjects }: ProjectsPageViewPr
               <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-1">
                 Explore Projects
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500">
-                Search and filter through TRINFRA projects across Kerala.
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Search and filter through TRINFRA projects across Kerala.
+                </p>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FAF9F6] border border-gray-200 text-gray-700">
+                  {filteredProjects.length} Project{filteredProjects.length === 1 ? '' : 's'}
+                </span>
+              </div>
             </div>
 
             {hasActiveFilters && (

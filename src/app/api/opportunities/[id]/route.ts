@@ -28,7 +28,15 @@ export async function GET(
     });
 
     if (!opp) {
-      return NextResponse.json({ error: 'Opportunity not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Opportunity not found' },
+        {
+          status: 404,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+        }
+      );
     }
 
     let parsedHighlights: string[] = [];
@@ -74,10 +82,17 @@ export async function GET(
       updatedAt: opp.updatedAt,
     };
 
-    return NextResponse.json({
-      success: true,
-      opportunity: formatted,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        opportunity: formatted,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   } catch (error) {
     console.error('Opportunity detail API error:', error);
     return NextResponse.json(

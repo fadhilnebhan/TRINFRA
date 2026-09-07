@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Users, Map as MapIcon, Layers, Handshake } from 'lucide-react';
 import { motion, useInView, animate } from 'framer-motion';
+import { useLiveDataSync } from '@/hooks/useLiveDataSync';
 
-function CountUpItem({ to, suffix = "", duration = 1.5 }: { to: number, suffix?: string, duration?: number }) {
+function CountUpItem({ to, suffix = "", duration = 1.2 }: { to: number, suffix?: string, duration?: number }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
-  const [value, setValue] = useState("0" + suffix);
+  const isInView = useInView(ref, { once: false, margin: "-50px" });
+  const [value, setValue] = useState(to.toLocaleString() + suffix);
 
   useEffect(() => {
     if (isInView) {
@@ -19,6 +20,8 @@ function CountUpItem({ to, suffix = "", duration = 1.5 }: { to: number, suffix?:
         }
       });
       return controls.stop;
+    } else {
+      setValue(to.toLocaleString() + suffix);
     }
   }, [isInView, to, duration, suffix]);
 
@@ -32,22 +35,29 @@ interface FloatingStatsProps {
 export default function FloatingStats({ liveOpportunitiesCount }: FloatingStatsProps) {
   const [oppCount, setOppCount] = useState<number>(liveOpportunitiesCount ?? 0);
 
-  useEffect(() => {
-    if (liveOpportunitiesCount !== undefined) {
-      setOppCount(liveOpportunitiesCount);
-      return;
-    }
-    fetch('/api/opportunities')
-      .then((res) => res.json())
-      .then((data) => {
+  useLiveDataSync<number>({
+    initialData: liveOpportunitiesCount ?? null,
+    fetcher: async (signal) => {
+      const res = await fetch('/api/opportunities', {
+        cache: 'no-store',
+        signal,
+      });
+      if (res.ok) {
+        const data = await res.json();
         if (typeof data.count === 'number') {
-          setOppCount(data.count);
-        } else if (Array.isArray(data.opportunities)) {
-          setOppCount(data.opportunities.length);
+          return data.count;
         }
-      })
-      .catch(() => {});
-  }, [liveOpportunitiesCount]);
+        if (Array.isArray(data.opportunities)) {
+          return data.opportunities.length;
+        }
+      }
+      return null;
+    },
+    onData: (freshCount) => {
+      setOppCount(freshCount);
+    },
+    intervalMs: 10000,
+  });
 
   const stats = [
     { icon: <Users className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent" strokeWidth={1.5} />, value: 500, label: "Landowners Onboarded" },

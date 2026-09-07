@@ -14,6 +14,7 @@ import {
 import {
   Opportunity,
 } from '@/lib/opportunitiesData';
+import { useLiveDataSync } from '@/hooks/useLiveDataSync';
 import OpportunityCard from './OpportunityCard';
 import CustomSelect from './CustomSelect';
 
@@ -65,24 +66,35 @@ export default function OpportunitiesPage({
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState<'latest' | 'area'>('latest');
 
-  useEffect(() => {
-    async function loadOpportunities() {
-      try {
-        const res = await fetch('/api/opportunities');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.opportunities)) {
-            setOpportunitiesList(data.opportunities);
-          }
+  useLiveDataSync<Opportunity[]>({
+    initialData: initialOpportunities || null,
+    fetcher: async (signal) => {
+      const res = await fetch('/api/opportunities', {
+        cache: 'no-store',
+        signal,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.opportunities)) {
+          return data.opportunities;
         }
-      } catch (err) {
-        console.warn('Could not load opportunities from database API:', err);
-      } finally {
-        setLoading(false);
       }
+      return null;
+    },
+    onData: (freshOpportunities) => {
+      setOpportunitiesList(freshOpportunities);
+      setLoading(false);
+    },
+    intervalMs: 10000,
+  });
+
+  // Automatically adjust current page if filtered items count shrank
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(opportunitiesList.length / ITEMS_PER_PAGE));
+    if (currentPage > maxPage) {
+      setCurrentPage(maxPage);
     }
-    loadOpportunities();
-  }, []);
+  }, [opportunitiesList.length, currentPage]);
 
 
   const districts = useMemo(() => {

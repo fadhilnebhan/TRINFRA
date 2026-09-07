@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import {
 import {
   Opportunity,
 } from '@/lib/opportunitiesData';
+import { useLiveDataSync } from '@/hooks/useLiveDataSync';
 import OpportunityCard from './OpportunityCard';
 import InterestModal from './InterestModal';
 
@@ -30,60 +31,86 @@ interface OpportunityDetailProps {
   opportunityId: string;
   initialOpportunity?: Opportunity | null;
   relatedOpportunities?: Opportunity[];
+  projectId?: string;
 }
 
 export default function OpportunityDetail({
   opportunityId,
   initialOpportunity = null,
   relatedOpportunities = [],
+  projectId,
 }: OpportunityDetailProps) {
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
   const [opportunity, setOpportunity] = useState<Opportunity | null>(initialOpportunity);
   const [similarOpportunities, setSimilarOpportunities] = useState<Opportunity[]>(relatedOpportunities);
   const [loading, setLoading] = useState(!initialOpportunity);
 
-  useEffect(() => {
-    async function fetchLiveOpportunity() {
-      try {
-        const res = await fetch(`/api/opportunities/${encodeURIComponent(opportunityId)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.opportunity) {
-            setOpportunity(data.opportunity);
-          } else {
-            setOpportunity(null);
-          }
-        } else if (res.status === 404) {
-          setOpportunity(null);
+  // Live synchronization for main opportunity & project validity
+  useLiveDataSync<Opportunity | null>({
+    initialData: initialOpportunity,
+    fetcher: async (signal) => {
+      // If accessed via a project page, verify the project still exists in DB
+      if (projectId) {
+        const projRes = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, {
+          cache: 'no-store',
+          signal,
+        });
+        if (projRes.status === 404) {
+          return null;
         }
-      } catch (err) {
-        console.warn('Failed to fetch opportunity from database API:', err);
-      } finally {
-        setLoading(false);
       }
-    }
 
-    if (!initialOpportunity) {
-      fetchLiveOpportunity();
-    }
-  }, [opportunityId, initialOpportunity]);
+      const res = await fetch(`/api/opportunities/${encodeURIComponent(opportunityId)}`, {
+        cache: 'no-store',
+        signal,
+      });
+      if (res.status === 404) {
+        return null;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        return data.opportunity ?? null;
+      }
+      return null;
+    },
+    onData: (freshOpp) => {
+      if (freshOpp === null) {
+        setOpportunity(null);
+      } else {
+        setOpportunity(freshOpp);
+      }
+      setLoading(false);
+    },
+    onNotFound: () => {
+      setOpportunity(null);
+      setLoading(false);
+    },
+    intervalMs: 10000,
+  });
 
-  useEffect(() => {
-    if (relatedOpportunities.length > 0) {
-      setSimilarOpportunities(relatedOpportunities);
-      return;
-    }
-    fetch('/api/opportunities')
-      .then((r) => r.json())
-      .then((d) => {
+  // Live synchronization for similar opportunities recommendations
+  useLiveDataSync<Opportunity[]>({
+    initialData: relatedOpportunities.length > 0 ? relatedOpportunities : null,
+    fetcher: async (signal) => {
+      const res = await fetch('/api/opportunities', {
+        cache: 'no-store',
+        signal,
+      });
+      if (res.ok) {
+        const d = await res.json();
         if (Array.isArray(d.opportunities)) {
-          setSimilarOpportunities(
-            d.opportunities.filter((o: Opportunity) => o.id !== opportunityId).slice(0, 3)
-          );
+          return d.opportunities
+            .filter((o: Opportunity) => o.id !== opportunityId)
+            .slice(0, 3);
         }
-      })
-      .catch(() => {});
-  }, [opportunityId, relatedOpportunities]);
+      }
+      return null;
+    },
+    onData: (freshSimilar) => {
+      setSimilarOpportunities(freshSimilar);
+    },
+    intervalMs: 12000,
+  });
 
   if (loading) {
     return (
@@ -98,16 +125,18 @@ export default function OpportunityDetail({
     return (
       <div className="py-24 text-center max-w-[1360px] mx-auto px-6">
         <h2 className="text-[28px] font-heading font-bold text-foreground mb-4">
-          Opportunity Not Found
+          {projectId ? 'Project Not Found' : 'Opportunity Not Found'}
         </h2>
         <p className="text-gray-500 mb-6">
-          The requested land-pooling opportunity could not be located or has been removed.
+          {projectId
+            ? 'The requested project could not be located or has been removed.'
+            : 'The requested land-pooling opportunity could not be located or has been removed.'}
         </p>
         <Link
-          href="/opportunities"
+          href={projectId ? '/projects' : '/opportunities'}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white font-bold text-[14px]"
         >
-          <ArrowLeft size={16} /> Back to Opportunities
+          <ArrowLeft size={16} /> Back to {projectId ? 'Projects' : 'Opportunities'}
         </Link>
       </div>
     );
