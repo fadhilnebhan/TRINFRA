@@ -21,23 +21,26 @@ import {
   Headphones,
 } from 'lucide-react';
 import {
-  getOpportunityById,
-  OPPORTUNITIES,
+  Opportunity,
 } from '@/lib/opportunitiesData';
 import OpportunityCard from './OpportunityCard';
 import InterestModal from './InterestModal';
 
 interface OpportunityDetailProps {
   opportunityId: string;
+  initialOpportunity?: Opportunity | null;
+  relatedOpportunities?: Opportunity[];
 }
 
 export default function OpportunityDetail({
   opportunityId,
+  initialOpportunity = null,
+  relatedOpportunities = [],
 }: OpportunityDetailProps) {
-  const initialOpp = getOpportunityById(opportunityId);
   const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
-  const [opportunity, setOpportunity] = useState(initialOpp);
-  const [loading, setLoading] = useState(!initialOpp);
+  const [opportunity, setOpportunity] = useState<Opportunity | null>(initialOpportunity);
+  const [similarOpportunities, setSimilarOpportunities] = useState<Opportunity[]>(relatedOpportunities);
+  const [loading, setLoading] = useState(!initialOpportunity);
 
   useEffect(() => {
     async function fetchLiveOpportunity() {
@@ -47,7 +50,11 @@ export default function OpportunityDetail({
           const data = await res.json();
           if (data.opportunity) {
             setOpportunity(data.opportunity);
+          } else {
+            setOpportunity(null);
           }
+        } else if (res.status === 404) {
+          setOpportunity(null);
         }
       } catch (err) {
         console.warn('Failed to fetch opportunity from database API:', err);
@@ -55,8 +62,28 @@ export default function OpportunityDetail({
         setLoading(false);
       }
     }
-    fetchLiveOpportunity();
-  }, [opportunityId]);
+
+    if (!initialOpportunity) {
+      fetchLiveOpportunity();
+    }
+  }, [opportunityId, initialOpportunity]);
+
+  useEffect(() => {
+    if (relatedOpportunities.length > 0) {
+      setSimilarOpportunities(relatedOpportunities);
+      return;
+    }
+    fetch('/api/opportunities')
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d.opportunities)) {
+          setSimilarOpportunities(
+            d.opportunities.filter((o: Opportunity) => o.id !== opportunityId).slice(0, 3)
+          );
+        }
+      })
+      .catch(() => {});
+  }, [opportunityId, relatedOpportunities]);
 
   if (loading) {
     return (
@@ -74,7 +101,7 @@ export default function OpportunityDetail({
           Opportunity Not Found
         </h2>
         <p className="text-gray-500 mb-6">
-          The requested land-pooling opportunity could not be located.
+          The requested land-pooling opportunity could not be located or has been removed.
         </p>
         <Link
           href="/opportunities"
@@ -86,10 +113,6 @@ export default function OpportunityDetail({
     );
   }
 
-  // Similar opportunities (excluding current one, max 3)
-  const similarOpportunities = OPPORTUNITIES.filter(
-    (o) => o.id !== opportunity.id
-  ).slice(0, 3);
 
   return (
     <div className="bg-background text-foreground font-sans">
@@ -818,32 +841,34 @@ export default function OpportunityDetail({
       </section>
 
       {/* ====== 5. EXPLORE SIMILAR OPPORTUNITIES ====== */}
-      <section className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16 pt-12 pb-16">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-[24px] md:text-[28px] font-heading font-extrabold text-foreground tracking-tight">
-              Explore Similar Opportunities
-            </h2>
-            <p className="text-[14px] text-gray-500 mt-0.5">
-              Discover other structured land-pooling clusters in Kerala.
-            </p>
+      {similarOpportunities.length > 0 && (
+        <section className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16 pt-12 pb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-[24px] md:text-[28px] font-heading font-extrabold text-foreground tracking-tight">
+                Explore Similar Opportunities
+              </h2>
+              <p className="text-[14px] text-gray-500 mt-0.5">
+                Discover other structured land-pooling clusters in Kerala.
+              </p>
+            </div>
+
+            <Link
+              href="/opportunities"
+              className="text-[13px] font-bold text-accent hover:text-accent-hover flex items-center gap-1 transition-colors"
+            >
+              <span>View All Opportunities</span>
+              <ArrowRight size={14} />
+            </Link>
           </div>
 
-          <Link
-            href="/opportunities"
-            className="text-[13px] font-bold text-accent hover:text-accent-hover flex items-center gap-1 transition-colors"
-          >
-            <span>View All Opportunities</span>
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {similarOpportunities.map((opp) => (
-            <OpportunityCard key={opp.id} opportunity={opp} />
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+            {similarOpportunities.map((opp) => (
+              <OpportunityCard key={opp.id} opportunity={opp} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ====== 6. FINAL CTA SECTION ====== */}
       <section className="relative py-20 md:py-24 bg-[#0A1810] overflow-hidden">

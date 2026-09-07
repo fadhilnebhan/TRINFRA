@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -147,6 +148,13 @@ export async function PATCH(
       data: updateData,
     });
 
+    // Invalidate public caches immediately
+    revalidatePath('/');
+    revalidatePath('/projects');
+    revalidatePath(`/projects/${id}`);
+    if (existing.slug) revalidatePath(`/projects/${existing.slug}`);
+    if (updated.slug && updated.slug !== existing.slug) revalidatePath(`/projects/${updated.slug}`);
+
     return NextResponse.json({ success: true, project: updated });
   } catch (error) {
     console.error('Update project error:', error);
@@ -198,6 +206,12 @@ export async function DELETE(
     await prisma.project.delete({
       where: { id },
     });
+
+    // Invalidate public caches immediately
+    revalidatePath('/');
+    revalidatePath('/projects');
+    revalidatePath(`/projects/${id}`);
+    if (existing.slug) revalidatePath(`/projects/${existing.slug}`);
 
     return NextResponse.json({
       success: true,

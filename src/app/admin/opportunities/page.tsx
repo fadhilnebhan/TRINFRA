@@ -17,7 +17,6 @@ import {
   MapPin,
   Compass,
 } from 'lucide-react';
-import { OPPORTUNITIES } from '@/lib/opportunitiesData';
 import CustomSelect from '@/components/opportunities/CustomSelect';
 import ImageUploadField from '@/components/admin/ImageUploadField';
 
@@ -69,8 +68,8 @@ const STATUS_OPTIONS = [
 ];
 
 export default function AdminOpportunitiesPage() {
-  const [opportunities, setOpportunities] = useState<AdminOpportunity[]>(OPPORTUNITIES as unknown as AdminOpportunity[]);
-  const [loading, setLoading] = useState(false);
+  const [opportunities, setOpportunities] = useState<AdminOpportunity[]>([]);
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 

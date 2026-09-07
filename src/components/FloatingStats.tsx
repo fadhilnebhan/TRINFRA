@@ -25,13 +25,37 @@ function CountUpItem({ to, suffix = "", duration = 1.5 }: { to: number, suffix?:
   return <span ref={ref}>{value}</span>;
 }
 
-export default function FloatingStats() {
+interface FloatingStatsProps {
+  liveOpportunitiesCount?: number;
+}
+
+export default function FloatingStats({ liveOpportunitiesCount }: FloatingStatsProps) {
+  const [oppCount, setOppCount] = useState<number>(liveOpportunitiesCount ?? 0);
+
+  useEffect(() => {
+    if (liveOpportunitiesCount !== undefined) {
+      setOppCount(liveOpportunitiesCount);
+      return;
+    }
+    fetch('/api/opportunities')
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data.count === 'number') {
+          setOppCount(data.count);
+        } else if (Array.isArray(data.opportunities)) {
+          setOppCount(data.opportunities.length);
+        }
+      })
+      .catch(() => {});
+  }, [liveOpportunitiesCount]);
+
   const stats = [
     { icon: <Users className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent" strokeWidth={1.5} />, value: 500, label: "Landowners Onboarded" },
-    { icon: <MapIcon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent" strokeWidth={1.5} />, value: 12, label: "Emerging Opportunities" },
+    { icon: <MapIcon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent" strokeWidth={1.5} />, value: oppCount, label: "Emerging Opportunities" },
     { icon: <Layers className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent" strokeWidth={1.5} />, value: 2500, label: "Acres Under Facilitation" },
     { icon: <Handshake className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-accent" strokeWidth={1.5} />, value: 25, label: "Professional Partners" },
   ];
+
 
   return (
     <section className="relative z-30 max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 mt-6 sm:-mt-10 md:-mt-16 mb-16 md:mb-20">

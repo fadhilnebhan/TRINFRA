@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -184,6 +185,10 @@ export async function POST(request: Request) {
         read: false,
       },
     });
+
+    // Invalidate public pages
+    revalidatePath('/');
+    revalidatePath('/opportunities');
 
     return NextResponse.json({ success: true, opportunity: newOpp }, { status: 201 });
   } catch (error) {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -23,7 +24,6 @@ export async function GET(
       },
       include: {
         projects: true,
-        parcels: true,
       },
     });
 
@@ -70,7 +70,6 @@ export async function GET(
         lng: opp.longitude ?? 76.27,
       },
       projects: opp.projects,
-      parcels: opp.parcels,
       createdAt: opp.createdAt,
       updatedAt: opp.updatedAt,
     };
@@ -154,6 +153,15 @@ export async function PATCH(
       data: updateData,
     });
 
+    // Invalidate public caches immediately
+    revalidatePath('/');
+    revalidatePath('/opportunities');
+    revalidatePath(`/opportunities/${existing.id}`);
+    revalidatePath(`/opportunities/${existing.slug}`);
+    if (updated.slug && updated.slug !== existing.slug) {
+      revalidatePath(`/opportunities/${updated.slug}`);
+    }
+
     return NextResponse.json({ success: true, opportunity: updated });
   } catch (error) {
     console.error('Update opportunity error:', error);
@@ -205,6 +213,12 @@ export async function DELETE(
     await prisma.opportunity.delete({
       where: { id: existing.id },
     });
+
+    // Invalidate public caches immediately
+    revalidatePath('/');
+    revalidatePath('/opportunities');
+    revalidatePath(`/opportunities/${existing.id}`);
+    revalidatePath(`/opportunities/${existing.slug}`);
 
     return NextResponse.json({
       success: true,

@@ -17,7 +17,6 @@ import {
   MapPin,
   FolderKanban,
 } from 'lucide-react';
-import { PROJECTS } from '@/lib/projectsData';
 import CustomSelect from '@/components/opportunities/CustomSelect';
 import CustomMultiSelect from '@/components/ui/CustomMultiSelect';
 import ImageUploadField from '@/components/admin/ImageUploadField';
@@ -79,8 +78,8 @@ const STAGE_OPTIONS = [
 ];
 
 export default function AdminProjectsPage() {
-  const [projects, setProjects] = useState<AdminProject[]>(PROJECTS as unknown as AdminProject[]);
-  const [loading, setLoading] = useState(false);
+  const [projects, setProjects] = useState<AdminProject[]>([]);
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 

@@ -1,41 +1,53 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import DeveloperEnquiryView from '@/components/opportunities/DeveloperEnquiryView';
 import {
-  OPPORTUNITIES,
-  getOpportunityById,
-  getOpportunitySlug,
-} from '@/lib/opportunitiesData';
+  getPublicOpportunityByIdOrSlug,
+  getPublicOpportunities,
+} from '@/lib/server/opportunities';
 
 interface PageProps {
   params: { id: string };
 }
 
-export function generateStaticParams() {
-  const ids = OPPORTUNITIES.map((o) => ({ id: o.id }));
-  const slugs = OPPORTUNITIES.map((o) => ({ id: getOpportunitySlug(o) }));
-  return [...ids, ...slugs];
-}
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export function generateMetadata({ params }: PageProps): Metadata {
-  const opp = getOpportunityById(params.id);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const opp = await getPublicOpportunityByIdOrSlug(params.id);
+  if (!opp) {
+    return {
+      title: 'Opportunity Not Found | Trinfra',
+      description: 'The requested land opportunity could not be found.',
+    };
+  }
+
   return {
-    title: opp
-      ? `Enquiry — ${opp.title} | Trinfra`
-      : 'Developer & Investor Enquiry | Trinfra',
-    description: opp
-      ? `Submit an enquiry for ${opp.title}. Connect with Trinfra for credible land-pooling opportunities.`
-      : 'Submit a developer or investor enquiry on Trinfra.',
+    title: `Enquiry — ${opp.title} | Trinfra`,
+    description: `Submit an enquiry for ${opp.title}. Connect with Trinfra for credible land-pooling opportunities.`,
   };
 }
 
-export default function OpportunityEnquiryPage({ params }: PageProps) {
+export default async function OpportunityEnquiryPage({ params }: PageProps) {
+  const opp = await getPublicOpportunityByIdOrSlug(params.id);
+
+  if (!opp) {
+    notFound();
+  }
+
+  const allOpps = await getPublicOpportunities();
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF9F6] font-sans text-foreground">
       <Navbar />
       <main className="flex-grow pt-[72px]">
-        <DeveloperEnquiryView initialOpportunityId={params.id} />
+        <DeveloperEnquiryView
+          initialOpportunityId={opp.id}
+          initialOpportunity={opp}
+          opportunitiesList={allOpps}
+        />
       </main>
       <Footer />
     </div>

@@ -18,13 +18,16 @@ import {
 } from 'lucide-react';
 import CustomSelect from '@/components/opportunities/CustomSelect';
 import {
-  PROJECTS,
   Project,
   ProjectStatus,
 } from '@/lib/projectsData';
 
-export default function ProjectsPageView() {
-  const [projectsList, setProjectsList] = useState<Project[]>(PROJECTS);
+interface ProjectsPageViewProps {
+  initialProjects?: Project[];
+}
+
+export default function ProjectsPageView({ initialProjects }: ProjectsPageViewProps) {
+  const [projectsList, setProjectsList] = useState<Project[]>(initialProjects || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('all');
@@ -42,7 +45,7 @@ export default function ProjectsPageView() {
           }
         }
       } catch (err) {
-        console.warn('Could not load projects from database API, using initial state:', err);
+        console.warn('Could not load projects from database API:', err);
       }
     }
     loadProjects();
@@ -50,8 +53,9 @@ export default function ProjectsPageView() {
 
   const gridSectionRef = useRef<HTMLDivElement>(null);
   const featured = useMemo(() => {
-    return projectsList.find((p) => p.featured) || projectsList[0] || PROJECTS[0];
+    return projectsList.find((p) => p.featured) || projectsList[0] || null;
   }, [projectsList]);
+
 
   const scrollToGrid = () => {
     gridSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -325,99 +329,99 @@ export default function ProjectsPageView() {
       {/* ==================================================
           3. FEATURED PROJECT
           ================================================== */}
-      <section className="py-16 md:py-20 bg-[#FBFBFA]">
-        <div className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16">
-          <div className="mb-4">
-            <span className="text-xs font-bold text-accent tracking-widest uppercase">
-              FEATURED PROJECT
-            </span>
-          </div>
+      {featured && (
+        <section className="py-16 md:py-20 bg-[#FBFBFA]">
+          <div className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16">
+            <div className="mb-4">
+              <span className="text-xs font-bold text-accent tracking-widest uppercase">
+                FEATURED PROJECT
+              </span>
+            </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-white rounded-[24px] border border-gray-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-12">
-              {/* Left Image (55%) */}
-              <div className="lg:col-span-7 relative min-h-[280px] sm:min-h-[340px] lg:min-h-[400px]">
-                <Image
-                  src={featured.image}
-                  alt={featured.projectName}
-                  fill
-                  priority
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="bg-white rounded-[24px] border border-gray-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12">
+                {/* Left Image (55%) */}
+                <div className="lg:col-span-7 relative min-h-[280px] sm:min-h-[340px] lg:min-h-[400px]">
+                  <Image
+                    src={featured.image}
+                    alt={featured.projectName}
+                    fill
+                    priority
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-                {/* Status Badge top-left */}
-                <div className="absolute top-5 left-5">
-                  <span className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-[#0E2115]/85 text-accent border border-accent/40 backdrop-blur-md shadow-md">
-                    {featured.status}
-                  </span>
-                </div>
-
-                {/* Script text bottom-left matching mockup */}
-                <div className="absolute bottom-5 left-5 right-5">
-                  <span className="font-serif italic text-white/95 text-base sm:text-lg drop-shadow-md">
-                    Shaping a Brighter Tomorrow in Kerala
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Content (45%) */}
-              <div className="lg:col-span-5 p-6 sm:p-8 lg:p-10 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-3 leading-snug">
-                    {featured.projectName}
-                  </h3>
-
-                  {/* Meta location & area */}
-                  <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-500 mb-4 pb-4 border-b border-gray-100">
-                    <span className="flex items-center gap-1.5 font-medium text-foreground">
-                      <MapPin size={15} className="text-accent shrink-0" />
-                      {featured.location}
-                    </span>
-                    <span className="flex items-center gap-1.5 font-medium text-foreground">
-                      <Layers size={15} className="text-accent shrink-0" />
-                      {featured.approximateArea}
+                  {/* Status Badge top-left */}
+                  <div className="absolute top-5 left-5">
+                    <span className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-[#0E2115]/85 text-accent border border-accent/40 backdrop-blur-md shadow-md">
+                      {featured.status}
                     </span>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed mb-6">
-                    {featured.description}
-                  </p>
-
-                  {/* Tag pills matching mockup */}
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                      In Progress
-                    </span>
-                    <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-gray-50 text-gray-600 border border-gray-200">
-                      Mixed Use
-                    </span>
-                    <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-gray-50 text-gray-600 border border-gray-200">
-                      Sustainable Development
+                  {/* Script text bottom-left matching mockup */}
+                  <div className="absolute bottom-5 left-5 right-5">
+                    <span className="font-serif italic text-white/95 text-base sm:text-lg drop-shadow-md">
+                      Shaping a Brighter Tomorrow in Kerala
                     </span>
                   </div>
                 </div>
 
-                <div>
+                {/* Right Content (45%) */}
+                <div className="lg:col-span-5 p-6 sm:p-8 lg:p-10 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-3 leading-snug">
+                      {featured.projectName}
+                    </h3>
+
+                    {/* Meta location & area */}
+                    <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-500 mb-4 pb-4 border-b border-gray-100">
+                      <span className="flex items-center gap-1.5 font-medium text-foreground">
+                        <MapPin size={15} className="text-accent shrink-0" />
+                        {featured.location}
+                      </span>
+                      <span className="flex items-center gap-1.5 font-medium text-foreground">
+                        <Layers size={15} className="text-accent shrink-0" />
+                        {featured.approximateArea}
+                      </span>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed mb-6">
+                      {featured.description}
+                    </p>
+
+                    {/* Tag pills matching mockup */}
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                        In Progress
+                      </span>
+                      <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-gray-50 text-gray-600 border border-gray-200">
+                        Mixed Use
+                      </span>
+                      <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                        Sustainable
+                      </span>
+                    </div>
+                  </div>
+
                   <Link
-                    href={`/projects/${featured.slug}`}
-                    className="inline-flex items-center gap-2 bg-primary-dark hover:bg-primary-btn text-white px-7 py-3 rounded-lg font-bold transition-all text-xs sm:text-sm group shadow-sm"
+                    href={`/projects/${featured.id}`}
+                    className="inline-flex items-center gap-2 text-sm font-bold text-foreground hover:text-accent transition-colors group cursor-pointer"
                   >
                     View Project
                     <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform text-accent" />
                   </Link>
                 </div>
               </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* ==================================================
           4. EXPLORE PROJECTS & FILTERS

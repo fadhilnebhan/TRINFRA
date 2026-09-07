@@ -8,16 +8,22 @@ import TrustVerification from '@/components/TrustVerification';
 import KnowledgeCentre from '@/components/KnowledgeCentre';
 import FinalCta from '@/components/FinalCta';
 import Footer from '@/components/Footer';
+import { getPublicOpportunities } from '@/lib/server/opportunities';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function Home() {
+  const opportunities = await getPublicOpportunities();
+
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">
       <Navbar />
       <main className="flex-grow">
         <Hero />
-        <FloatingStats />
+        <FloatingStats liveOpportunitiesCount={opportunities.length} />
         <HowItWorks />
-        <FeaturedOpportunities />
+        <FeaturedOpportunities opportunities={opportunities.slice(0, 3)} />
         <TargetAudiences />
         <TrustVerification />
         <KnowledgeCentre />

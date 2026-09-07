@@ -12,7 +12,6 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import {
-  OPPORTUNITIES,
   Opportunity,
 } from '@/lib/opportunitiesData';
 import OpportunityCard from './OpportunityCard';
@@ -40,8 +39,17 @@ const SORT_OPTIONS = [
 
 const ITEMS_PER_PAGE = 6;
 
-export default function OpportunitiesPage() {
-  const [opportunitiesList, setOpportunitiesList] = useState<Opportunity[]>(OPPORTUNITIES);
+interface OpportunitiesPageProps {
+  initialOpportunities?: Opportunity[];
+}
+
+export default function OpportunitiesPage({
+  initialOpportunities,
+}: OpportunitiesPageProps) {
+  const [opportunitiesList, setOpportunitiesList] = useState<Opportunity[]>(
+    initialOpportunities || []
+  );
+  const [loading, setLoading] = useState(!initialOpportunities);
   const [district, setDistrict] = useState('');
   const [locality, setLocality] = useState('');
   const [areaRange, setAreaRange] = useState('');
@@ -68,11 +76,14 @@ export default function OpportunitiesPage() {
           }
         }
       } catch (err) {
-        console.warn('Could not load opportunities from database API, using initial state:', err);
+        console.warn('Could not load opportunities from database API:', err);
+      } finally {
+        setLoading(false);
       }
     }
     loadOpportunities();
   }, []);
+
 
   const districts = useMemo(() => {
     return Array.from(new Set(opportunitiesList.map((o) => o.district))).sort();
@@ -355,23 +366,45 @@ export default function OpportunitiesPage() {
             </div>
           </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
-            {paginatedOpportunities.map((opportunity, i) => (
-              <motion.div
-                key={opportunity.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
-              >
-                <OpportunityCard opportunity={opportunity} />
-              </motion.div>
-            ))}
-          </div>
+          {/* Grid / Loading Skeleton */}
+          {loading && opportunitiesList.length === 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <div
+                  key={n}
+                  className="bg-white rounded-[20px] border border-gray-100 overflow-hidden shadow-xs animate-pulse"
+                >
+                  <div className="h-56 bg-gray-200" />
+                  <div className="p-6 space-y-4">
+                    <div className="h-6 bg-gray-200 rounded-md w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded-md w-1/2" />
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                      <div className="h-10 bg-gray-100 rounded-md" />
+                      <div className="h-10 bg-gray-100 rounded-md" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
+              {paginatedOpportunities.map((opportunity, i) => (
+                <motion.div
+                  key={opportunity.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.05 }}
+                >
+                  <OpportunityCard opportunity={opportunity} />
+                </motion.div>
+              ))}
+            </div>
+          )}
 
           {/* Empty State */}
-          {filteredOpportunities.length === 0 && (
+          {!loading && filteredOpportunities.length === 0 && (
             <div className="text-center py-20">
+
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search size={24} className="text-gray-400" />
               </div>
@@ -588,7 +621,9 @@ export default function OpportunitiesPage() {
             href={
               filteredOpportunities.length > 0
                 ? `/opportunities/${filteredOpportunities[0].id}`
-                : `/opportunities/${OPPORTUNITIES[0].id}`
+                : opportunitiesList.length > 0
+                ? `/opportunities/${opportunitiesList[0].id}`
+                : '/opportunities'
             }
             className="w-full sm:w-auto bg-accent text-white px-8 sm:px-10 py-4 rounded-md font-bold hover:bg-accent-hover transition-colors flex items-center justify-center gap-2 shrink-0 group text-[15px] shadow-lg text-center"
           >

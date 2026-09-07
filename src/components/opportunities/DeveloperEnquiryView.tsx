@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Building2,
@@ -23,8 +23,6 @@ import {
   Check,
 } from 'lucide-react';
 import {
-  OPPORTUNITIES,
-  getOpportunityById,
   type Opportunity,
 } from '@/lib/opportunitiesData';
 import {
@@ -38,6 +36,8 @@ import { validatePhone, validateEmail, validateRequired } from '@/lib/validators
 
 interface DeveloperEnquiryViewProps {
   initialOpportunityId?: string;
+  initialOpportunity?: Opportunity | null;
+  opportunitiesList?: Opportunity[];
 }
 
 const INTEREST_OPTIONS: SelectOption[] = [
@@ -70,16 +70,67 @@ const LOCATION_OPTIONS: SelectOption[] = [
   { value: 'other', label: 'Other' },
 ];
 
+const DEFAULT_OPPORTUNITY: Opportunity = {
+  id: 'OPP-1',
+  title: 'Kozhikode North',
+  location: 'Kozhikode, Kerala',
+  district: 'Kozhikode',
+  locality: 'Vadakara',
+  area: 125,
+  areaUnit: 'Acres',
+  landowners: 18,
+  status: 'In Progress',
+  image: '/images/houses_tropical.jpeg',
+  shortDescription: 'Strategic location with strong development potential.',
+  overview: '',
+  highlights: [],
+  developmentPotential: '',
+  currentStatusDetail: '',
+  coordinates: { lat: 11.35, lng: 75.78 },
+};
+
 export default function DeveloperEnquiryView({
   initialOpportunityId = 'OPP-1',
+  initialOpportunity = null,
+  opportunitiesList = [],
 }: DeveloperEnquiryViewProps) {
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(opportunitiesList);
+
+  useEffect(() => {
+    if (opportunitiesList && opportunitiesList.length > 0) {
+      setOpportunities(opportunitiesList);
+      return;
+    }
+    fetch('/api/opportunities')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.opportunities)) {
+          setOpportunities(data.opportunities);
+        }
+      })
+      .catch(() => {});
+  }, [opportunitiesList]);
+
   // Resolve initial opportunity
   const initialOpp = useMemo(() => {
-    return getOpportunityById(initialOpportunityId) || OPPORTUNITIES[0];
-  }, [initialOpportunityId]);
+    if (initialOpportunity) return initialOpportunity;
+    return (
+      opportunities.find((o) => o.id === initialOpportunityId) ||
+      opportunities[0] ||
+      DEFAULT_OPPORTUNITY
+    );
+  }, [initialOpportunity, initialOpportunityId, opportunities]);
 
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity>(initialOpp);
+
+  useEffect(() => {
+    if (initialOpp) {
+      setSelectedOpportunity((prev) => (prev.id === DEFAULT_OPPORTUNITY.id ? initialOpp : prev));
+    }
+  }, [initialOpp]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   // Form states
   const [userType, setUserType] = useState<'Developer' | 'Investor'>('Developer');
@@ -1001,8 +1052,8 @@ export default function DeveloperEnquiryView({
 
             {/* Opportunity List */}
             <div className="overflow-y-auto py-3 space-y-2.5 flex-grow pr-1">
-              {OPPORTUNITIES.map((opp) => {
-                const isSelected = opp.id === selectedOpportunity.id;
+              {opportunities.map((opp) => {
+                const isSelected = selectedOpportunity ? opp.id === selectedOpportunity.id : false;
                 return (
                   <div
                     key={opp.id}
