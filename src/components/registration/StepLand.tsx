@@ -1,6 +1,7 @@
 'use client';
 
 import { StepProps } from './types';
+import CustomSelect from '@/components/opportunities/CustomSelect';
 
 const OWNERSHIP_OPTIONS = [
   { value: 'sole', label: 'Sole Owner' },
@@ -47,22 +48,14 @@ export default function StepLand({ data, updateField, errors }: StepProps) {
                 }`}
               />
             </div>
-            <div className="relative w-[130px]">
-              <select
+            <div className="w-[140px] shrink-0">
+              <CustomSelect
                 id="areaUnit"
                 value={data.areaUnit}
-                onChange={(e) => updateField('areaUnit', e.target.value as 'acres' | 'cents' | 'hectares')}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white text-[15px] text-foreground outline-none transition-colors appearance-none cursor-pointer focus:border-accent focus:ring-1 focus:ring-accent/20"
-              >
-                {AREA_UNITS.map((u) => (
-                  <option key={u.value} value={u.value}>{u.label}</option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M3 4.5L6 7.5L9 4.5" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
+                onChange={(val) => updateField('areaUnit', val as 'acres' | 'cents' | 'hectares')}
+                options={AREA_UNITS}
+                placeholder="Unit"
+              />
             </div>
           </div>
           {errors.approximateArea && <p className="text-red-500 text-[12px] mt-1.5">{errors.approximateArea}</p>}

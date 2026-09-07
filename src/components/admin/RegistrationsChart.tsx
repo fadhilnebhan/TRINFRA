@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { REGISTRATION_CHART_DATA } from '@/lib/adminData';
+import CustomSelect from '@/components/opportunities/CustomSelect';
 
 export default function RegistrationsChart() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -20,15 +21,19 @@ export default function RegistrationsChart() {
           <p className="text-[12px] text-gray-400">Last 7 Days Activity</p>
         </div>
 
-        <select
-          value={timeframe}
-          onChange={(e) => setTimeframe(e.target.value)}
-          aria-label="Chart timeframe"
-          className="text-[12px] font-semibold text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 outline-none cursor-pointer hover:bg-gray-100 transition-colors"
-        >
-          <option value="7d">Last 7 Days</option>
-          <option value="30d">Last 30 Days</option>
-        </select>
+        <div className="w-[140px]">
+          <CustomSelect
+            value={timeframe}
+            onChange={(val) => setTimeframe(val)}
+            options={[
+              { value: '7d', label: 'Last 7 Days' },
+              { value: '30d', label: 'Last 30 Days' },
+            ]}
+            size="sm"
+            align="right"
+            aria-label="Chart timeframe"
+          />
+        </div>
       </div>
 
       {/* Chart Area */}

@@ -8,6 +8,7 @@ import {
   addManualLandowner,
   LandownerLead,
 } from '@/lib/adminData';
+import CustomSelect from '@/components/opportunities/CustomSelect';
 
 interface ManualEntryModalProps {
   isOpen: boolean;
@@ -165,53 +166,56 @@ export default function ManualEntryModal({
               <label className="block text-[11px] font-semibold uppercase text-gray-500 mb-1">
                 Landowner Type
               </label>
-              <select
+              <CustomSelect
                 value={landownerType}
-                onChange={(e) => setLandownerType(e.target.value as LandownerType)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white outline-none"
-              >
-                <option value="Individual">Individual</option>
-                <option value="Family">Family</option>
-                <option value="Group">Group</option>
-              </select>
+                onChange={(val) => setLandownerType(val as LandownerType)}
+                options={[
+                  { value: 'Individual', label: 'Individual' },
+                  { value: 'Family', label: 'Family' },
+                  { value: 'Group', label: 'Group' },
+                ]}
+                placeholder="Type"
+              />
             </div>
             <div>
               <label className="block text-[11px] font-semibold uppercase text-gray-500 mb-1">
                 Ownership
               </label>
-              <select
+              <CustomSelect
                 value={ownershipStatus}
-                onChange={(e) =>
+                onChange={(val) =>
                   setOwnershipStatus(
-                    e.target.value as
+                    val as
                       | 'Self Owned'
                       | 'Family Inherited'
                       | 'Joint Ownership'
                       | 'Other'
                   )
                 }
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white outline-none"
-              >
-                <option value="Self Owned">Self Owned</option>
-                <option value="Family Inherited">Family Inherited</option>
-                <option value="Joint Ownership">Joint Ownership</option>
-                <option value="Other">Other</option>
-              </select>
+                options={[
+                  { value: 'Self Owned', label: 'Self Owned' },
+                  { value: 'Family Inherited', label: 'Family Inherited' },
+                  { value: 'Joint Ownership', label: 'Joint Ownership' },
+                  { value: 'Other', label: 'Other' },
+                ]}
+                placeholder="Ownership"
+              />
             </div>
             <div>
               <label className="block text-[11px] font-semibold uppercase text-gray-500 mb-1">
                 Initial Status
               </label>
-              <select
+              <CustomSelect
                 value={status}
-                onChange={(e) => setStatus(e.target.value as LandownerStatus)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white outline-none"
-              >
-                <option value="New">New</option>
-                <option value="Verification Pending">Verification Pending</option>
-                <option value="Verified">Verified</option>
-                <option value="Needs Clarification">Needs Clarification</option>
-              </select>
+                onChange={(val) => setStatus(val as LandownerStatus)}
+                options={[
+                  { value: 'New', label: 'New' },
+                  { value: 'Verification Pending', label: 'Verification Pending' },
+                  { value: 'Verified', label: 'Verified' },
+                  { value: 'Needs Clarification', label: 'Needs Clarification' },
+                ]}
+                placeholder="Status"
+              />
             </div>
           </div>
 
@@ -220,17 +224,13 @@ export default function ManualEntryModal({
               <label className="block text-[11px] font-semibold uppercase text-gray-500 mb-1">
                 District
               </label>
-              <select
+              <CustomSelect
                 value={district}
-                onChange={(e) => setDistrict(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white outline-none"
-              >
-                {DISTRICTS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setDistrict(val)}
+                options={DISTRICTS.map((d) => ({ value: d, label: d }))}
+                searchable
+                placeholder="Select District"
+              />
             </div>
             <div>
               <label className="block text-[11px] font-semibold uppercase text-gray-500 mb-1">

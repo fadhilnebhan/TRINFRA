@@ -18,6 +18,9 @@ import {
   FolderKanban,
 } from 'lucide-react';
 import { PROJECTS } from '@/lib/projectsData';
+import CustomSelect from '@/components/opportunities/CustomSelect';
+import CustomMultiSelect from '@/components/ui/CustomMultiSelect';
+import ImageUploadField from '@/components/admin/ImageUploadField';
 
 interface AdminProject {
   id: string;
@@ -85,6 +88,7 @@ export default function AdminProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
   const [deletingProject, setDeletingProject] = useState<AdminProject | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -128,6 +132,7 @@ export default function AdminProjectsPage() {
 
   const openCreateModal = () => {
     setEditingProject(null);
+    setSelectedImageFile(null);
     setFormData({
       title: '',
       district: 'Kozhikode',
@@ -150,6 +155,7 @@ export default function AdminProjectsPage() {
 
   const openEditModal = (proj: AdminProject) => {
     setEditingProject(proj);
+    setSelectedImageFile(null);
     let tagsText = '';
     if (Array.isArray(proj.tags)) {
       tagsText = proj.tags.join(', ');
@@ -187,6 +193,28 @@ export default function AdminProjectsPage() {
     setActionLoading(true);
     setFeedback(null);
 
+    let finalImageUrl = formData.image;
+    if (selectedImageFile) {
+      try {
+        const uploadForm = new FormData();
+        uploadForm.append('file', selectedImageFile);
+        const upRes = await fetch('/api/admin/upload-image', {
+          method: 'POST',
+          body: uploadForm,
+        });
+        const upJson = await upRes.json();
+        if (!upRes.ok) throw new Error(upJson.error || 'Failed to upload image');
+        finalImageUrl = upJson.url;
+      } catch (uploadErr) {
+        setActionLoading(false);
+        setFeedback({
+          type: 'error',
+          message: uploadErr instanceof Error ? uploadErr.message : 'Image upload failed',
+        });
+        return;
+      }
+    }
+
     const tagsArray = formData.tags
       .split(',')
       .map((t) => t.trim())
@@ -205,7 +233,7 @@ export default function AdminProjectsPage() {
       description: formData.description,
       overview: formData.overview,
       tags: tagsArray,
-      image: formData.image,
+      image: finalImageUrl,
       featured: formData.featured,
       opportunityId: formData.opportunityId || null,
     };
@@ -492,15 +520,13 @@ export default function AdminProjectsPage() {
                   <label className="block font-semibold text-gray-700 mb-1">
                     District <span className="text-red-500">*</span>
                   </label>
-                  <select
+                  <CustomSelect
                     value={formData.district}
-                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary bg-white text-[14px]"
-                  >
-                    {DISTRICT_OPTIONS.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, district: val })}
+                    options={DISTRICT_OPTIONS.map((d) => ({ value: d, label: d }))}
+                    searchable
+                    placeholder="Select district"
+                  />
                 </div>
 
                 <div>
@@ -566,30 +592,24 @@ export default function AdminProjectsPage() {
                   <label className="block font-semibold text-gray-700 mb-1">
                     Status
                   </label>
-                  <select
+                  <CustomSelect
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px]"
-                  >
-                    {STATUS_OPTIONS.map((st) => (
-                      <option key={st.value} value={st.value}>{st.label}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, status: val })}
+                    options={STATUS_OPTIONS}
+                    placeholder="Select status"
+                  />
                 </div>
 
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1">
                     Development Stage
                   </label>
-                  <select
+                  <CustomSelect
                     value={formData.developmentStage}
-                    onChange={(e) => setFormData({ ...formData, developmentStage: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px]"
-                  >
-                    {STAGE_OPTIONS.map((stg) => (
-                      <option key={stg.value} value={stg.value}>{stg.label}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, developmentStage: val })}
+                    options={STAGE_OPTIONS}
+                    placeholder="Select stage"
+                  />
                 </div>
 
                 <div>
@@ -637,27 +657,37 @@ export default function AdminProjectsPage() {
 
               <div>
                 <label className="block font-semibold text-gray-700 mb-1">
-                  Tags (Comma separated)
+                  Tags / Categories
                 </label>
-                <input
-                  type="text"
-                  value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  placeholder="Land Pooling, Master Planned, Institutional"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[13px]"
+                <CustomMultiSelect
+                  values={formData.tags ? formData.tags.split(',').map((t) => t.trim()).filter(Boolean) : []}
+                  onChange={(vals) => setFormData({ ...formData, tags: vals.join(', ') })}
+                  options={[
+                    { value: 'Land Pooling', label: 'Land Pooling' },
+                    { value: 'Master Planned', label: 'Master Planned' },
+                    { value: 'Institutional', label: 'Institutional' },
+                    { value: 'Industrial', label: 'Industrial' },
+                    { value: 'Logistics', label: 'Logistics' },
+                    { value: 'Commercial', label: 'Commercial' },
+                    { value: 'Mixed-Use', label: 'Mixed-Use' },
+                    { value: 'Infrastructure', label: 'Infrastructure' },
+                    { value: 'Residential', label: 'Residential' },
+                  ]}
+                  placeholder="Select tags or type custom..."
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Image URL / Asset Path
-                </label>
-                <input
-                  type="text"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="/images/projects/kozhikode-hub.jpg or external URL"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[13px]"
+                <ImageUploadField
+                  label="Project Image"
+                  currentImageUrl={formData.image}
+                  onFileSelect={(file) => {
+                    setSelectedImageFile(file);
+                  }}
+                  onRemove={() => {
+                    setSelectedImageFile(null);
+                    setFormData({ ...formData, image: '' });
+                  }}
                 />
               </div>
 

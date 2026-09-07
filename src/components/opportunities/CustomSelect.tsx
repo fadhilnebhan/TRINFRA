@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect, useId, useCallback } from 'react';
+import { useState, useRef, useEffect, useId, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Search, X } from 'lucide-react';
 
 export interface SelectOption {
   value: string;
@@ -19,6 +19,8 @@ export interface CustomSelectProps {
   size?: 'md' | 'sm';
   align?: 'left' | 'right';
   disabled?: boolean;
+  searchable?: boolean;
+  searchPlaceholder?: string;
   'aria-label'?: string;
 }
 
@@ -32,26 +34,45 @@ export default function CustomSelect({
   size = 'md',
   align = 'left',
   disabled = false,
+  searchable = false,
+  searchPlaceholder = 'Search options...',
   'aria-label': ariaLabel,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
   const selectId = id || `custom-select-${generatedId}`;
 
+  // Filter options when searchable is active
+  const filteredOptions = useMemo(() => {
+    if (!searchable || !searchTerm.trim()) {
+      return options;
+    }
+    const term = searchTerm.toLowerCase().trim();
+    return options.filter((opt) => opt.label.toLowerCase().includes(term));
+  }, [options, searchable, searchTerm]);
+
   // Find currently selected option
   const selectedOption = options.find((opt) => opt.value === value);
-  const selectedIndex = options.findIndex((opt) => opt.value === value);
 
-  // Sync highlightedIndex when opening
+  // Sync highlightedIndex and focus search input when opening
   useEffect(() => {
     if (isOpen) {
-      setHighlightedIndex(selectedIndex >= 0 ? selectedIndex : 0);
+      const idx = filteredOptions.findIndex((opt) => opt.value === value);
+      setHighlightedIndex(idx >= 0 ? idx : 0);
+      if (searchable) {
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+    } else {
+      setSearchTerm('');
     }
-  }, [isOpen, selectedIndex]);
+  }, [isOpen, value, filteredOptions, searchable]);
 
   // Click outside to close
   useEffect(() => {
@@ -96,16 +117,15 @@ export default function CustomSelect({
     [onChange]
   );
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (disabled) return;
 
     switch (e.key) {
       case 'Enter':
-      case ' ':
         e.preventDefault();
         if (isOpen) {
-          if (highlightedIndex >= 0 && highlightedIndex < options.length) {
-            handleSelect(options[highlightedIndex].value);
+          if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
+            handleSelect(filteredOptions[highlightedIndex].value);
           }
         } else {
           setIsOpen(true);
@@ -118,7 +138,7 @@ export default function CustomSelect({
           setIsOpen(true);
         } else {
           setHighlightedIndex((prev) =>
-            prev < options.length - 1 ? prev + 1 : 0
+            prev < filteredOptions.length - 1 ? prev + 1 : 0
           );
         }
         break;
@@ -129,7 +149,7 @@ export default function CustomSelect({
           setIsOpen(true);
         } else {
           setHighlightedIndex((prev) =>
-            prev > 0 ? prev - 1 : options.length - 1
+            prev > 0 ? prev - 1 : filteredOptions.length - 1
           );
         }
         break;
@@ -148,38 +168,7 @@ export default function CustomSelect({
         }
         break;
 
-      case 'Home':
-        if (isOpen) {
-          e.preventDefault();
-          setHighlightedIndex(0);
-        }
-        break;
-
-      case 'End':
-        if (isOpen) {
-          e.preventDefault();
-          setHighlightedIndex(options.length - 1);
-        }
-        break;
-
       default:
-        // Type-ahead jump to matching option
-        if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
-          const char = e.key.toLowerCase();
-          const nextIndex = options.findIndex((opt, idx) => {
-            return idx > highlightedIndex && opt.label.toLowerCase().startsWith(char);
-          });
-          const fallbackIndex = options.findIndex((opt) =>
-            opt.label.toLowerCase().startsWith(char)
-          );
-          const targetIndex = nextIndex !== -1 ? nextIndex : fallbackIndex;
-          if (targetIndex !== -1) {
-            setHighlightedIndex(targetIndex);
-            if (!isOpen) {
-              setIsOpen(true);
-            }
-          }
-        }
         break;
     }
   };
@@ -244,6 +233,34 @@ export default function CustomSelect({
                 : 'left-0 right-0 w-full min-w-full sm:min-w-[200px]'
             } ${isSmall ? 'text-[13px]' : 'text-[14px]'}`}
           >
+            {/* Search Input for Searchable Mode */}
+            {searchable && (
+              <div className="p-2 border-b border-gray-100 bg-[#FAFBF9] sticky top-0 z-10">
+                <div className="relative">
+                  <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={searchPlaceholder}
+                    className="w-full pl-8 pr-7 py-1.5 text-[13px] bg-white rounded-lg border border-gray-200 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 text-foreground placeholder:text-gray-400"
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchTerm('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Options List */}
             <ul
               ref={listRef}
               id={`${selectId}-listbox`}
@@ -260,38 +277,44 @@ export default function CustomSelect({
                 scrollbarColor: '#CBD5E1 transparent',
               }}
             >
-              {options.map((option, index) => {
-                const isSelected = option.value === value;
-                const isHighlighted = index === highlightedIndex;
+              {filteredOptions.length === 0 ? (
+                <li className="px-4 py-3 text-center text-gray-400 text-[13px]">
+                  No matching options
+                </li>
+              ) : (
+                filteredOptions.map((option, index) => {
+                  const isSelected = option.value === value;
+                  const isHighlighted = index === highlightedIndex;
 
-                return (
-                  <li
-                    key={option.value || `opt-${index}`}
-                    id={`${selectId}-option-${index}`}
-                    role="option"
-                    aria-selected={isSelected}
-                    data-value={option.value}
-                    onClick={() => handleSelect(option.value)}
-                    onMouseEnter={() => setHighlightedIndex(index)}
-                    className={`flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors duration-150 select-none ${
-                      isSelected
-                        ? 'bg-[#0E2115]/[0.07] text-primary font-semibold'
-                        : isHighlighted
-                        ? 'bg-[#0E2115]/[0.04] text-primary'
-                        : 'text-gray-700 hover:bg-[#0E2115]/[0.03]'
-                    }`}
-                  >
-                    <span className="truncate">{option.label}</span>
-                    {isSelected && (
-                      <Check
-                        size={15}
-                        className="text-accent shrink-0 ml-2 stroke-[2.5]"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </li>
-                );
-              })}
+                  return (
+                    <li
+                      key={option.value || `opt-${index}`}
+                      id={`${selectId}-option-${index}`}
+                      role="option"
+                      aria-selected={isSelected}
+                      data-value={option.value}
+                      onClick={() => handleSelect(option.value)}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      className={`flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors duration-150 select-none ${
+                        isSelected
+                          ? 'bg-[#0E2115]/[0.07] text-primary font-semibold'
+                          : isHighlighted
+                          ? 'bg-[#0E2115]/[0.04] text-primary'
+                          : 'text-gray-700 hover:bg-[#0E2115]/[0.03]'
+                      }`}
+                    >
+                      <span className="truncate">{option.label}</span>
+                      {isSelected && (
+                        <Check
+                          size={15}
+                          className="text-accent shrink-0 ml-2 stroke-[2.5]"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </li>
+                  );
+                })
+              )}
             </ul>
           </motion.div>
         )}

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { LandownerStatus } from '@/lib/adminData';
+import CustomSelect from '@/components/opportunities/CustomSelect';
 
 interface DocumentItem {
   id: string;
@@ -831,17 +832,18 @@ export default function LandownerDetailPage() {
                 <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">
                   Document Type
                 </label>
-                <select
+                <CustomSelect
                   value={uploadDocType}
-                  onChange={(e) => setUploadDocType(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-[13px] text-foreground outline-none"
-                >
-                  <option value="OWNERSHIP">Title Deed / Patta</option>
-                  <option value="IDENTITY">Identity Proof</option>
-                  <option value="LAND_RECORD">Land Tax Receipt / EC</option>
-                  <option value="SURVEY">Survey Map / Sketch</option>
-                  <option value="OTHER">Other Record</option>
-                </select>
+                  onChange={(val) => setUploadDocType(val)}
+                  options={[
+                    { value: 'OWNERSHIP', label: 'Title Deed / Patta' },
+                    { value: 'IDENTITY', label: 'Identity Proof' },
+                    { value: 'LAND_RECORD', label: 'Land Tax Receipt / EC' },
+                    { value: 'SURVEY', label: 'Survey Map / Sketch' },
+                    { value: 'OTHER', label: 'Other Record' },
+                  ]}
+                  placeholder="Document Type"
+                />
               </div>
 
               <div className="sm:col-span-2">

@@ -3,6 +3,7 @@
 import { StepProps } from './types';
 import { MapPin } from 'lucide-react';
 import { getDistrictNames, getLocalBodies } from '@/lib/locationData';
+import CustomSelect from '@/components/opportunities/CustomSelect';
 
 export default function StepLocation({ data, updateField, errors }: StepProps) {
   const districts = getDistrictNames();
@@ -30,26 +31,14 @@ export default function StepLocation({ data, updateField, errors }: StepProps) {
             <label htmlFor="district" className="block text-[13px] font-semibold text-foreground mb-2">
               District <span className="text-red-400">*</span>
             </label>
-            <div className="relative">
-              <select
-                id="district"
-                value={data.district}
-                onChange={(e) => handleDistrictChange(e.target.value)}
-                className={`w-full px-4 py-3 rounded-lg border bg-white text-[15px] text-foreground outline-none transition-colors appearance-none cursor-pointer ${
-                  errors.district ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-accent focus:ring-1 focus:ring-accent/20'
-                } ${!data.district ? 'text-gray-400' : ''}`}
-              >
-                <option value="">Select your district</option>
-                {districts.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M3 4.5L6 7.5L9 4.5" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            </div>
+            <CustomSelect
+              id="district"
+              value={data.district}
+              onChange={(val) => handleDistrictChange(val)}
+              options={districts.map((d) => ({ value: d, label: d }))}
+              searchable
+              placeholder="Select your district"
+            />
             {errors.district && <p className="text-red-500 text-[12px] mt-1.5">{errors.district}</p>}
           </div>
 
@@ -58,27 +47,15 @@ export default function StepLocation({ data, updateField, errors }: StepProps) {
             <label htmlFor="localBody" className="block text-[13px] font-semibold text-foreground mb-2">
               Local Body <span className="text-red-400">*</span>
             </label>
-            <div className="relative">
-              <select
-                id="localBody"
-                value={data.localBody}
-                onChange={(e) => updateField('localBody', e.target.value)}
-                disabled={!data.district}
-                className={`w-full px-4 py-3 rounded-lg border bg-white text-[15px] text-foreground outline-none transition-colors appearance-none cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed ${
-                  errors.localBody ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-accent focus:ring-1 focus:ring-accent/20'
-                } ${!data.localBody ? 'text-gray-400' : ''}`}
-              >
-                <option value="">{data.district ? 'Select local body' : 'Select a district first'}</option>
-                {localBodies.map((lb) => (
-                  <option key={lb.name} value={lb.name}>{lb.name}</option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M3 4.5L6 7.5L9 4.5" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            </div>
+            <CustomSelect
+              id="localBody"
+              value={data.localBody}
+              onChange={(val) => updateField('localBody', val)}
+              options={localBodies.map((lb) => ({ value: lb.name, label: lb.name }))}
+              disabled={!data.district}
+              searchable
+              placeholder={data.district ? 'Select local body' : 'Select a district first'}
+            />
             {errors.localBody && <p className="text-red-500 text-[12px] mt-1.5">{errors.localBody}</p>}
           </div>
 

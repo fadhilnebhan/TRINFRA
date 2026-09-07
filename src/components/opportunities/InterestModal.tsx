@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { X, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
 import { submitInvestorEnquiry } from '@/lib/enquirySubmissions';
 import type { Opportunity } from '@/lib/opportunitiesData';
+import CustomSelect from './CustomSelect';
 
 interface InterestModalProps {
   isOpen: boolean;
@@ -133,29 +134,31 @@ export default function InterestModal({
                   <label className="block text-[11px] font-semibold uppercase text-gray-500 mb-1">
                     User Type
                   </label>
-                  <select
+                  <CustomSelect
                     value={userType}
-                    onChange={(e) => setUserType(e.target.value as 'developer' | 'investor' | 'other')}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white outline-none"
-                  >
-                    <option value="developer">Developer</option>
-                    <option value="investor">Investor</option>
-                    <option value="other">Other / Institution</option>
-                  </select>
+                    onChange={(val) => setUserType(val as 'developer' | 'investor' | 'other')}
+                    options={[
+                      { value: 'developer', label: 'Developer' },
+                      { value: 'investor', label: 'Investor' },
+                      { value: 'other', label: 'Other / Institution' },
+                    ]}
+                    placeholder="User Type"
+                  />
                 </div>
                 <div>
                   <label className="block text-[11px] font-semibold uppercase text-gray-500 mb-1">
                     Preferred Contact
                   </label>
-                  <select
+                  <CustomSelect
                     value={preferredContact}
-                    onChange={(e) => setPreferredContact(e.target.value as 'whatsapp' | 'phone' | 'email')}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white outline-none"
-                  >
-                    <option value="whatsapp">WhatsApp</option>
-                    <option value="phone">Phone Call</option>
-                    <option value="email">Email</option>
-                  </select>
+                    onChange={(val) => setPreferredContact(val as 'whatsapp' | 'phone' | 'email')}
+                    options={[
+                      { value: 'whatsapp', label: 'WhatsApp' },
+                      { value: 'phone', label: 'Phone Call' },
+                      { value: 'email', label: 'Email' },
+                    ]}
+                    placeholder="Preferred Contact"
+                  />
                 </div>
               </div>
 

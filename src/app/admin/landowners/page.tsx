@@ -23,6 +23,7 @@ import {
 import { ApiLandowner } from '@/types/backend';
 import StatusBadge from '@/components/admin/StatusBadge';
 import ManualEntryModal from '@/components/admin/ManualEntryModal';
+import CustomSelect from '@/components/opportunities/CustomSelect';
 
 const DISTRICTS = [
   'All Districts',
@@ -277,20 +278,15 @@ export default function LandownerLeadsPage() {
             <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1 block">
               Status
             </label>
-            <select
+            <CustomSelect
               value={selectedStatus}
-              onChange={(e) => {
-                setSelectedStatus(e.target.value);
+              onChange={(val) => {
+                setSelectedStatus(val);
                 setCurrentPage(1);
               }}
-              className="w-full bg-white border border-gray-200 hover:border-gray-300 rounded-lg px-3 py-2 text-[13px] text-foreground outline-none cursor-pointer"
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              options={STATUSES.map((s) => ({ value: s, label: s }))}
+              placeholder="Status"
+            />
           </div>
 
           {/* District Filter */}
@@ -298,20 +294,16 @@ export default function LandownerLeadsPage() {
             <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1 block">
               District
             </label>
-            <select
+            <CustomSelect
               value={selectedDistrict}
-              onChange={(e) => {
-                setSelectedDistrict(e.target.value);
+              onChange={(val) => {
+                setSelectedDistrict(val);
                 setCurrentPage(1);
               }}
-              className="w-full bg-white border border-gray-200 hover:border-gray-300 rounded-lg px-3 py-2 text-[13px] text-foreground outline-none cursor-pointer"
-            >
-              {DISTRICTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
+              options={DISTRICTS.map((d) => ({ value: d, label: d }))}
+              searchable
+              placeholder="District"
+            />
           </div>
 
           {/* Landowner Type */}
@@ -319,20 +311,15 @@ export default function LandownerLeadsPage() {
             <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1 block">
               Landowner Type
             </label>
-            <select
+            <CustomSelect
               value={selectedType}
-              onChange={(e) => {
-                setSelectedType(e.target.value);
+              onChange={(val) => {
+                setSelectedType(val);
                 setCurrentPage(1);
               }}
-              className="w-full bg-white border border-gray-200 hover:border-gray-300 rounded-lg px-3 py-2 text-[13px] text-foreground outline-none cursor-pointer"
-            >
-              {TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+              options={TYPES.map((t) => ({ value: t, label: t }))}
+              placeholder="Type"
+            />
           </div>
 
           {/* Submitted Date */}
@@ -557,18 +544,23 @@ export default function LandownerLeadsPage() {
           {/* Items per page */}
           <div className="flex items-center gap-1.5 text-[12px]">
             <span>Show:</span>
-            <select
-              value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="bg-gray-50 border border-gray-200 rounded-md px-2 py-1 outline-none text-foreground cursor-pointer font-medium"
-            >
-              <option value={10}>10 per page</option>
-              <option value={20}>20 per page</option>
-              <option value={50}>50 per page</option>
-            </select>
+            <div className="w-[125px]">
+              <CustomSelect
+                value={String(itemsPerPage)}
+                onChange={(val) => {
+                  setItemsPerPage(Number(val));
+                  setCurrentPage(1);
+                }}
+                options={[
+                  { value: '10', label: '10 per page' },
+                  { value: '20', label: '20 per page' },
+                  { value: '50', label: '50 per page' },
+                ]}
+                size="sm"
+                align="right"
+                aria-label="Items per page"
+              />
+            </div>
           </div>
 
           {/* Page numbers */}

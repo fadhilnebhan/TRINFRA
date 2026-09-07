@@ -18,6 +18,8 @@ import {
   Compass,
 } from 'lucide-react';
 import { OPPORTUNITIES } from '@/lib/opportunitiesData';
+import CustomSelect from '@/components/opportunities/CustomSelect';
+import ImageUploadField from '@/components/admin/ImageUploadField';
 
 interface AdminOpportunity {
   id: string;
@@ -76,6 +78,7 @@ export default function AdminOpportunitiesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingOpp, setEditingOpp] = useState<AdminOpportunity | null>(null);
   const [deletingOpp, setDeletingOpp] = useState<AdminOpportunity | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -117,6 +120,7 @@ export default function AdminOpportunitiesPage() {
 
   const openCreateModal = () => {
     setEditingOpp(null);
+    setSelectedImageFile(null);
     setFormData({
       title: '',
       district: 'Kozhikode',
@@ -137,6 +141,7 @@ export default function AdminOpportunitiesPage() {
 
   const openEditModal = (opp: AdminOpportunity) => {
     setEditingOpp(opp);
+    setSelectedImageFile(null);
     let highlightsText = '';
     if (Array.isArray(opp.highlights)) {
       highlightsText = opp.highlights.join('\n');
@@ -172,6 +177,28 @@ export default function AdminOpportunitiesPage() {
     setActionLoading(true);
     setFeedback(null);
 
+    let finalImageUrl = formData.image;
+    if (selectedImageFile) {
+      try {
+        const uploadForm = new FormData();
+        uploadForm.append('file', selectedImageFile);
+        const upRes = await fetch('/api/admin/upload-image', {
+          method: 'POST',
+          body: uploadForm,
+        });
+        const upJson = await upRes.json();
+        if (!upRes.ok) throw new Error(upJson.error || 'Failed to upload image');
+        finalImageUrl = upJson.url;
+      } catch (uploadErr) {
+        setActionLoading(false);
+        setFeedback({
+          type: 'error',
+          message: uploadErr instanceof Error ? uploadErr.message : 'Image upload failed',
+        });
+        return;
+      }
+    }
+
     const highlightsArray = formData.highlights
       .split('\n')
       .map((h) => h.trim())
@@ -190,7 +217,7 @@ export default function AdminOpportunitiesPage() {
       overview: formData.overview,
       highlights: highlightsArray,
       developmentPotential: formData.developmentPotential,
-      image: formData.image,
+      image: finalImageUrl,
     };
 
     try {
@@ -457,15 +484,13 @@ export default function AdminOpportunitiesPage() {
                   <label className="block font-semibold text-gray-700 mb-1">
                     District <span className="text-red-500">*</span>
                   </label>
-                  <select
+                  <CustomSelect
                     value={formData.district}
-                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 focus:outline-hidden focus:border-primary bg-white text-[14px]"
-                  >
-                    {DISTRICT_OPTIONS.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, district: val })}
+                    options={DISTRICT_OPTIONS.map((d) => ({ value: d, label: d }))}
+                    searchable
+                    placeholder="Select district"
+                  />
                 </div>
 
                 <div>
@@ -516,15 +541,16 @@ export default function AdminOpportunitiesPage() {
                   <label className="block font-semibold text-gray-700 mb-1">
                     Area Unit
                   </label>
-                  <select
+                  <CustomSelect
                     value={formData.areaUnit}
-                    onChange={(e) => setFormData({ ...formData, areaUnit: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px]"
-                  >
-                    <option value="Acres">Acres</option>
-                    <option value="Cents">Cents</option>
-                    <option value="Hectares">Hectares</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, areaUnit: val })}
+                    options={[
+                      { value: 'Acres', label: 'Acres' },
+                      { value: 'Cents', label: 'Cents' },
+                      { value: 'Hectares', label: 'Hectares' },
+                    ]}
+                    placeholder="Unit"
+                  />
                 </div>
 
                 <div>
@@ -545,15 +571,12 @@ export default function AdminOpportunitiesPage() {
                 <label className="block font-semibold text-gray-700 mb-1">
                   Status
                 </label>
-                <select
+                <CustomSelect
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 bg-white text-[14px]"
-                >
-                  {STATUS_OPTIONS.map((st) => (
-                    <option key={st.value} value={st.value}>{st.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => setFormData({ ...formData, status: val })}
+                  options={STATUS_OPTIONS}
+                  placeholder="Select status"
+                />
               </div>
 
               <div>
@@ -598,15 +621,16 @@ export default function AdminOpportunitiesPage() {
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-700 mb-1">
-                  Image Path / URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  placeholder="/images/opportunities/kozhikode.jpg or external URL"
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-[13px]"
+                <ImageUploadField
+                  label="Opportunity Image"
+                  currentImageUrl={formData.image}
+                  onFileSelect={(file) => {
+                    setSelectedImageFile(file);
+                  }}
+                  onRemove={() => {
+                    setSelectedImageFile(null);
+                    setFormData({ ...formData, image: '' });
+                  }}
                 />
               </div>
 
