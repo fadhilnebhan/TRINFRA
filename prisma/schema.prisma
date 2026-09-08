@@ -86,6 +86,8 @@ model Opportunity {
   image                String
   latitude             Float?
   longitude            Float?
+  isPinned             Boolean            @default(false)
+  pinnedAt             DateTime?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 
@@ -93,6 +95,8 @@ model Opportunity {
   projects   Project[]
   enquiries  DeveloperEnquiry[]
   adminNotes AdminNote[]
+
+  @@index([isPinned, pinnedAt])
 }
 
 model Project {

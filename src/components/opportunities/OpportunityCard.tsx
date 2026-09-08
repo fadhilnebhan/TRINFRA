@@ -51,6 +51,12 @@ export default function OpportunityCard({ opportunity, priority = false }: Oppor
         >
           {opportunity.status}
         </div>
+        {opportunity.isPinned && (
+          <div className="absolute top-4 right-4 z-10 bg-[#0E2115]/90 backdrop-blur-sm text-[#BD9655] border border-[#BD9655]/40 text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+            <span>📌</span>
+            <span>Pinned</span>
+          </div>
+        )}
       </div>
 
       {/* Content Area */}

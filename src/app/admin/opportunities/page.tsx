@@ -41,6 +41,8 @@ interface AdminOpportunity {
   currentStatusDetail?: string;
   latitude?: number;
   longitude?: number;
+  isPinned?: boolean;
+  pinnedAt?: string | null;
 }
 
 const DISTRICT_OPTIONS = [
@@ -72,6 +74,8 @@ export default function AdminOpportunitiesPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [pinFilter, setPinFilter] = useState<'all' | 'pinned' | 'unpinned'>('all');
+  const [pinningId, setPinningId] = useState<string | null>(null);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -278,6 +282,65 @@ export default function AdminOpportunitiesPage() {
     }
   };
 
+  const handleTogglePin = async (opp: AdminOpportunity) => {
+    const nextPinned = !opp.isPinned;
+    setPinningId(opp.id);
+    setFeedback(null);
+
+    // Optimistic UI update
+    const previous = [...opportunities];
+    setOpportunities((prev) =>
+      prev.map((o) =>
+        o.id === opp.id
+          ? { ...o, isPinned: nextPinned, pinnedAt: nextPinned ? new Date().toISOString() : null }
+          : o
+      )
+    );
+
+    try {
+      const res = await fetch(`/api/opportunities/${opp.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPinned: nextPinned }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update pin status');
+      }
+
+      setFeedback({
+        type: 'success',
+        message: nextPinned
+          ? `Opportunity "${opp.title}" pinned to top.`
+          : `Opportunity "${opp.title}" unpinned.`,
+      });
+
+      // Silently refresh list to sync exact database ordering
+      const refreshRes = await fetch('/api/opportunities');
+      if (refreshRes.ok) {
+        const refreshData = await refreshRes.json();
+        if (Array.isArray(refreshData.opportunities)) {
+          setOpportunities(refreshData.opportunities);
+        }
+      }
+    } catch (err: unknown) {
+      // Revert optimistic update on failure
+      setOpportunities(previous);
+      setFeedback({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Pin action failed',
+      });
+    } finally {
+      setPinningId(null);
+    }
+  };
+
+  const displayedOpportunities = opportunities.filter((opp) => {
+    if (pinFilter === 'pinned') return Boolean(opp.isPinned);
+    if (pinFilter === 'unpinned') return !opp.isPinned;
+    return true;
+  });
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top back navigation */}
@@ -356,6 +419,45 @@ export default function AdminOpportunitiesPage() {
           )}
         </div>
 
+        {/* Filter Tabs: All, Pinned, Unpinned */}
+        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/40 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setPinFilter('all')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                pinFilter === 'all'
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'text-gray-600 hover:bg-gray-200/60 bg-white border border-gray-200'
+              }`}
+            >
+              All ({opportunities.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setPinFilter('pinned')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 ${
+                pinFilter === 'pinned'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:bg-gray-200/60 bg-white border border-gray-200'
+              }`}
+            >
+              📌 Pinned ({opportunities.filter((o) => o.isPinned).length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setPinFilter('unpinned')}
+              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                pinFilter === 'unpinned'
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'text-gray-600 hover:bg-gray-200/60 bg-white border border-gray-200'
+              }`}
+            >
+              Unpinned ({opportunities.filter((o) => !o.isPinned).length})
+            </button>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
@@ -369,11 +471,18 @@ export default function AdminOpportunitiesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-[13px]">
-              {opportunities.map((opp) => (
+              {displayedOpportunities.map((opp) => (
                 <tr key={opp.id} className="hover:bg-gray-50/80 transition-colors">
                   <td className="py-3.5 px-4 font-bold text-foreground">
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-[14px] text-foreground">{opp.title}</span>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-[14px] text-foreground">{opp.title}</span>
+                        {opp.isPinned && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                            📌 Pinned
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[11px] text-gray-400 font-mono">{opp.id} • {opp.slug}</span>
                     </div>
                   </td>
@@ -404,6 +513,26 @@ export default function AdminOpportunitiesPage() {
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      {/* Pin / Unpin Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePin(opp)}
+                        disabled={pinningId === opp.id}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          opp.isPinned
+                            ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
+                            : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                        }`}
+                        title={opp.isPinned ? 'Click to unpin from top' : 'Click to pin to top'}
+                      >
+                        {pinningId === opp.id ? (
+                          <Loader2 size={13} className="animate-spin text-gray-600" />
+                        ) : (
+                          <span>📌</span>
+                        )}
+                        <span>{opp.isPinned ? 'Pinned' : 'Pin'}</span>
+                      </button>
+
                       <Link
                         href={`/opportunities/${opp.slug || opp.id}`}
                         target="_blank"

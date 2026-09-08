@@ -33,7 +33,11 @@ export async function GET(request: Request) {
 
     const opportunities = await prisma.opportunity.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { isPinned: 'desc' },
+        { pinnedAt: 'desc' },
+        { createdAt: 'desc' },
+      ],
       include: {
         projects: {
           select: { id: true, title: true, slug: true, status: true },
@@ -82,6 +86,8 @@ export async function GET(request: Request) {
           lng: opp.longitude ?? 76.27,
         },
         projects: opp.projects,
+        isPinned: Boolean(opp.isPinned),
+        pinnedAt: opp.pinnedAt ? opp.pinnedAt.toISOString() : null,
         createdAt: opp.createdAt,
         updatedAt: opp.updatedAt,
       };
@@ -134,6 +140,7 @@ export async function POST(request: Request) {
       image,
       latitude,
       longitude,
+      isPinned = false,
     } = body;
 
     if (!title || !location || !district || !locality || area === undefined || !shortDescription || !overview) {
@@ -158,6 +165,7 @@ export async function POST(request: Request) {
     }
 
     const nextId = `OPP-${Date.now().toString().slice(-4)}`;
+    const pinnedBool = Boolean(isPinned);
 
     const newOpp = await prisma.opportunity.create({
       data: {
@@ -179,6 +187,8 @@ export async function POST(request: Request) {
         image: image || '/images/houses_tropical.jpeg',
         latitude: latitude ? parseFloat(String(latitude)) : null,
         longitude: longitude ? parseFloat(String(longitude)) : null,
+        isPinned: pinnedBool,
+        pinnedAt: pinnedBool ? new Date() : null,
       },
     });
 

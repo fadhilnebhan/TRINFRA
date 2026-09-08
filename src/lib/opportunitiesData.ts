@@ -20,6 +20,8 @@ export interface Opportunity {
   developmentPotential: string;
   currentStatusDetail: string;
   coordinates: { lat: number; lng: number }; // approximate, public-safe
+  isPinned?: boolean;
+  pinnedAt?: string | null;
 }
 
 // Single source of truth is PostgreSQL. No hardcoded mock opportunities.

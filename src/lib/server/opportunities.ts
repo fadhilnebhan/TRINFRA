@@ -24,6 +24,8 @@ export function formatPublicOpportunity(opp: {
   currentStatusDetail: string | null;
   latitude: number | null;
   longitude: number | null;
+  isPinned?: boolean | null;
+  pinnedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }): Opportunity & { slug: string } {
@@ -72,6 +74,8 @@ export function formatPublicOpportunity(opp: {
       lat: opp.latitude ?? 10.85,
       lng: opp.longitude ?? 76.27,
     },
+    isPinned: Boolean(opp.isPinned),
+    pinnedAt: opp.pinnedAt ? opp.pinnedAt.toISOString() : null,
   };
 }
 
@@ -84,7 +88,11 @@ export async function getPublicOpportunities(): Promise<Array<Opportunity & { sl
       where: {
         status: { not: 'CLOSED' },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { isPinned: 'desc' },
+        { pinnedAt: 'desc' },
+        { createdAt: 'desc' },
+      ],
     });
 
     return opps.map(formatPublicOpportunity);

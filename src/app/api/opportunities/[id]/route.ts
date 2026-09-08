@@ -78,6 +78,8 @@ export async function GET(
         lng: opp.longitude ?? 76.27,
       },
       projects: opp.projects,
+      isPinned: Boolean(opp.isPinned),
+      pinnedAt: opp.pinnedAt ? opp.pinnedAt.toISOString() : null,
       createdAt: opp.createdAt,
       updatedAt: opp.updatedAt,
     };
@@ -141,6 +143,7 @@ export async function PATCH(
       image,
       latitude,
       longitude,
+      isPinned,
     } = body;
 
     const updateData: Record<string, unknown> = {};
@@ -162,6 +165,11 @@ export async function PATCH(
     if (image !== undefined) updateData.image = image;
     if (latitude !== undefined) updateData.latitude = latitude ? parseFloat(String(latitude)) : null;
     if (longitude !== undefined) updateData.longitude = longitude ? parseFloat(String(longitude)) : null;
+    if (isPinned !== undefined) {
+      const pinnedBool = Boolean(isPinned);
+      updateData.isPinned = pinnedBool;
+      updateData.pinnedAt = pinnedBool ? new Date() : null;
+    }
 
     const updated = await prisma.opportunity.update({
       where: { id: existing.id },

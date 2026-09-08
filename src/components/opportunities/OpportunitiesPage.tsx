@@ -144,7 +144,7 @@ export default function OpportunitiesPage({
   };
 
   const filteredOpportunities = useMemo(() => {
-    let results = opportunitiesList.filter((opp) => {
+    const results = opportunitiesList.filter((opp) => {
       if (appliedFilters.district && opp.district !== appliedFilters.district) return false;
       if (appliedFilters.locality && opp.locality !== appliedFilters.locality) return false;
       if (appliedFilters.status && opp.status !== appliedFilters.status) return false;
@@ -166,9 +166,23 @@ export default function OpportunitiesPage({
       return true;
     });
 
-    if (sortOrder === 'area') {
-      results = [...results].sort((a, b) => b.area - a.area);
-    }
+    // Sort with pinned items always prioritized at the top of matching results
+    results.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+
+      if (a.isPinned && b.isPinned) {
+        const timeA = a.pinnedAt ? new Date(a.pinnedAt).getTime() : 0;
+        const timeB = b.pinnedAt ? new Date(b.pinnedAt).getTime() : 0;
+        if (timeA !== timeB) return timeB - timeA;
+      }
+
+      if (sortOrder === 'area') {
+        return b.area - a.area;
+      }
+
+      return 0;
+    });
 
     return results;
   }, [opportunitiesList, appliedFilters, sortOrder]);

@@ -174,12 +174,18 @@ export default function OpportunityDetail({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Hero Column */}
           <div className="lg:col-span-6 space-y-5">
-            {/* Status Badge */}
-            <div className="inline-block">
+            {/* Status & Pinned Badges */}
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="bg-[#0E2115] text-accent font-bold text-[11px] uppercase tracking-wider px-3.5 py-1.5 rounded-md inline-flex items-center gap-1.5 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                 {opportunity.status}
               </span>
+              {opportunity.isPinned && (
+                <span className="bg-[#BD9655]/15 text-[#8C6B28] border border-[#BD9655]/40 font-bold text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-md inline-flex items-center gap-1">
+                  <span>📌</span>
+                  <span>Pinned</span>
+                </span>
+              )}
             </div>
 
             {/* Title & Location */}
