@@ -156,6 +156,15 @@ async function runE2ETests() {
   } catch (err) {
     console.error('Opportunity workflow error:', err);
     failed++;
+  } finally {
+    if (testOppId) {
+      try {
+        await fetch(`${BASE_URL}/api/opportunities/${testOppId}`, {
+          method: 'DELETE',
+          headers: authHeaders,
+        });
+      } catch (_) {}
+    }
   }
 
   // 4. PROJECT FULL CMS WORKFLOW: Create -> Public Read -> Edit -> Update Public -> Delete
@@ -230,6 +239,15 @@ async function runE2ETests() {
   } catch (err) {
     console.error('Project workflow error:', err);
     failed++;
+  } finally {
+    if (testProjId) {
+      try {
+        await fetch(`${BASE_URL}/api/projects/${testProjId}`, {
+          method: 'DELETE',
+          headers: authHeaders,
+        });
+      } catch (_) {}
+    }
   }
 
   // 5. LANDOWNER MANAGEMENT: Register -> Admin View -> Status Update -> Delete

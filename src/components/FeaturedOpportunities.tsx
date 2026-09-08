@@ -18,6 +18,7 @@ export default function FeaturedOpportunities({
 
   useLiveDataSync<Opportunity[]>({
     initialData: opportunities.length > 0 ? opportunities : null,
+    runOnMount: true,
     fetcher: async (signal) => {
       const res = await fetch('/api/opportunities', {
         cache: 'no-store',
@@ -34,7 +35,7 @@ export default function FeaturedOpportunities({
     onData: (freshOpps) => {
       setItems(freshOpps);
     },
-    intervalMs: 25000,
+    intervalMs: 10000,
   });
   return (
     <section id="opportunities" className="py-12 pb-20 md:pb-24 bg-background">

@@ -69,6 +69,7 @@ export default function OpportunitiesPage({
 
   useLiveDataSync<Opportunity[]>({
     initialData: initialOpportunities || null,
+    runOnMount: true,
     fetcher: async (signal) => {
       const res = await fetch('/api/opportunities', {
         cache: 'no-store',
@@ -86,7 +87,7 @@ export default function OpportunitiesPage({
       setOpportunitiesList(freshOpportunities);
       setLoading(false);
     },
-    intervalMs: 25000,
+    intervalMs: 10000,
   });
 
   // Automatically adjust current page if filtered items count shrank

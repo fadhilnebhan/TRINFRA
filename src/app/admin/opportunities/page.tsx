@@ -103,7 +103,7 @@ export default function AdminOpportunitiesPage() {
   const fetchOpportunities = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/opportunities');
+      const res = await fetch('/api/opportunities?includeClosed=true');
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.opportunities)) {

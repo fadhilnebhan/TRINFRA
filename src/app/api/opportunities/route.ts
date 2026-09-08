@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+import { formatPublicOpportunity } from '@/lib/server/opportunities';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,6 +12,7 @@ export async function GET(request: Request) {
     const district = searchParams.get('district');
     const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const includeClosed = searchParams.get('includeClosed') === 'true';
 
     const where: Record<string, unknown> = {};
 
@@ -20,6 +22,8 @@ export async function GET(request: Request) {
 
     if (status && status !== 'all') {
       where.status = { equals: status, mode: 'insensitive' };
+    } else if (!includeClosed) {
+      where.status = { not: 'CLOSED' };
     }
 
     if (search) {
@@ -45,53 +49,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const formatted = opportunities.map((opp) => {
-      let parsedHighlights: string[] = [];
-      if (opp.highlights) {
-        try {
-          parsedHighlights = JSON.parse(opp.highlights);
-        } catch {
-          parsedHighlights = [opp.highlights];
-        }
-      }
-
-      // Map status for frontend display compatibility
-      let displayStatus = opp.status;
-      if (opp.status === 'IN_PROGRESS') displayStatus = 'In Progress';
-      else if (opp.status === 'OPEN') displayStatus = 'New Opportunity';
-      else if (opp.status === 'FORMING') displayStatus = 'Emerging';
-
-      return {
-        id: opp.id,
-        title: opp.title,
-        slug: opp.slug,
-        location: opp.location,
-        district: opp.district,
-        locality: opp.locality,
-        area: opp.area,
-        areaUnit: opp.areaUnit || 'Acres',
-        landowners: opp.landownersCount,
-        landownersCount: opp.landownersCount,
-        status: displayStatus,
-        rawStatus: opp.status,
-        image: (!opp.image || opp.image.includes('/images/opportunities/')) ? '/images/houses_tropical.jpeg' : opp.image,
-        shortDescription: opp.shortDescription,
-        description: opp.shortDescription,
-        overview: opp.overview,
-        highlights: parsedHighlights,
-        developmentPotential: opp.developmentPotential || '',
-        currentStatusDetail: opp.currentStatusDetail || '',
-        coordinates: {
-          lat: opp.latitude ?? 10.85,
-          lng: opp.longitude ?? 76.27,
-        },
-        projects: opp.projects,
-        isPinned: Boolean(opp.isPinned),
-        pinnedAt: opp.pinnedAt ? opp.pinnedAt.toISOString() : null,
-        createdAt: opp.createdAt,
-        updatedAt: opp.updatedAt,
-      };
-    });
+    const formatted = opportunities.map(formatPublicOpportunity);
 
     return NextResponse.json(
       {

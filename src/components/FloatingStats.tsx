@@ -37,6 +37,7 @@ export default function FloatingStats({ liveOpportunitiesCount }: FloatingStatsP
 
   useLiveDataSync<number>({
     initialData: liveOpportunitiesCount ?? null,
+    runOnMount: true,
     fetcher: async (signal) => {
       const res = await fetch('/api/opportunities', {
         cache: 'no-store',
@@ -56,7 +57,7 @@ export default function FloatingStats({ liveOpportunitiesCount }: FloatingStatsP
     onData: (freshCount) => {
       setOppCount(freshCount);
     },
-    intervalMs: 25000,
+    intervalMs: 10000,
   });
 
   const stats = [

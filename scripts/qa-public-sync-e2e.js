@@ -165,6 +165,15 @@ async function runPublicSyncTests() {
   } catch (err) {
     console.error('Delete verification error:', err);
     failed++;
+  } finally {
+    if (testOppId) {
+      try {
+        await fetch(`${targetUrl}/api/opportunities/${testOppId}`, {
+          method: 'DELETE',
+          headers: authHeaders,
+        });
+      } catch (_) {}
+    }
   }
 
   // 5. API VS PUBLIC CONSISTENCY TEST

@@ -28,7 +28,16 @@ export function formatPublicOpportunity(opp: {
   pinnedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
-}): Opportunity & { slug: string } {
+  projects?: Array<{ id: string; title: string; slug: string; status: string }>;
+}): Opportunity & {
+  slug: string;
+  landownersCount: number;
+  rawStatus: string;
+  description: string;
+  projects: Array<{ id: string; title: string; slug: string; status: string }>;
+  createdAt?: string;
+  updatedAt?: string;
+} {
   let parsedHighlights: string[] = [];
   if (opp.highlights) {
     try {
@@ -63,9 +72,12 @@ export function formatPublicOpportunity(opp: {
     area: opp.area,
     areaUnit: 'Acres',
     landowners: opp.landownersCount,
+    landownersCount: opp.landownersCount,
     status: displayStatus,
+    rawStatus: opp.status,
     image: resolvedImage,
     shortDescription: opp.shortDescription,
+    description: opp.shortDescription,
     overview: opp.overview,
     highlights: parsedHighlights,
     developmentPotential: opp.developmentPotential || '',
@@ -74,8 +86,11 @@ export function formatPublicOpportunity(opp: {
       lat: opp.latitude ?? 10.85,
       lng: opp.longitude ?? 76.27,
     },
+    projects: opp.projects || [],
     isPinned: Boolean(opp.isPinned),
     pinnedAt: opp.pinnedAt ? opp.pinnedAt.toISOString() : null,
+    createdAt: opp.createdAt ? opp.createdAt.toISOString() : undefined,
+    updatedAt: opp.updatedAt ? opp.updatedAt.toISOString() : undefined,
   };
 }
 
@@ -93,6 +108,11 @@ export async function getPublicOpportunities(): Promise<Array<Opportunity & { sl
         { pinnedAt: 'desc' },
         { createdAt: 'desc' },
       ],
+      include: {
+        projects: {
+          select: { id: true, title: true, slug: true, status: true },
+        },
+      },
     });
 
     return opps.map(formatPublicOpportunity);
@@ -116,6 +136,11 @@ export async function getPublicOpportunityByIdOrSlug(
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
         status: { not: 'CLOSED' },
+      },
+      include: {
+        projects: {
+          select: { id: true, title: true, slug: true, status: true },
+        },
       },
     });
 
