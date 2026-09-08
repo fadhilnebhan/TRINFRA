@@ -289,7 +289,7 @@ export default function OpportunitiesPage({
       </section>
 
       {/* ====== FILTER BAR ====== */}
-      <section className="bg-background border-b border-gray-200 sticky top-[72px] z-30">
+      <section className="bg-background border-b border-gray-200 static md:sticky md:top-[72px] md:z-30">
         <div className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16 py-5">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-4">
             {/* Filters */}
