@@ -128,9 +128,9 @@ export default function AdminResidentialDetailPage() {
   // Delete modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const fetchListing = useCallback(async () => {
+  const fetchListing = useCallback(async (showLoading = true) => {
     if (!listingId) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/admin/residential/listings/${listingId}`);
@@ -150,12 +150,12 @@ export default function AdminResidentialDetailPage() {
       console.error('Error loading residential detail:', err);
       setError(err.message || 'Listing not found');
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, [listingId]);
 
   useEffect(() => {
-    fetchListing();
+    fetchListing(true);
   }, [fetchListing]);
 
   // Handle keyboard navigation for lightbox
@@ -186,8 +186,9 @@ export default function AdminResidentialDetailPage() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Failed to approve listing');
 
+      setListing((prev) => (prev ? { ...prev, status: 'PUBLISHED', publishedAt: new Date().toISOString(), rejectionReason: null } : null));
       setActionMessage({ type: 'success', text: 'Listing approved and published publicly!' });
-      await fetchListing();
+      fetchListing(false);
     } catch (err: any) {
       setActionMessage({ type: 'error', text: err.message || 'Error approving listing' });
     } finally {
@@ -212,9 +213,10 @@ export default function AdminResidentialDetailPage() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Failed to reject listing');
 
+      setListing((prev) => (prev ? { ...prev, status: 'REJECTED', rejectionReason: rejectionReason.trim() } : null));
       setIsRejectModalOpen(false);
       setActionMessage({ type: 'success', text: 'Listing rejected and feedback notified to seller.' });
-      await fetchListing();
+      fetchListing(false);
     } catch (err: any) {
       alert(err.message || 'Error rejecting listing');
     } finally {
@@ -233,8 +235,9 @@ export default function AdminResidentialDetailPage() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Failed to unpublish listing');
 
+      setListing((prev) => (prev ? { ...prev, status: 'UNPUBLISHED' } : null));
       setActionMessage({ type: 'success', text: 'Listing unpublished and hidden from public marketplace.' });
-      await fetchListing();
+      fetchListing(false);
     } catch (err: any) {
       setActionMessage({ type: 'error', text: err.message || 'Error unpublishing listing' });
     } finally {

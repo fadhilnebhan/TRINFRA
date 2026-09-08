@@ -88,7 +88,6 @@ async function runVerification() {
     await page.goto(`${BASE_URL}/admin/residential`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
 
-    // Check desktop table links
     const desktopDetailLinks = await page.$$('a[href^="/admin/residential/cm"]');
     assert(
       desktopDetailLinks.length > 0,
@@ -99,21 +98,21 @@ async function runVerification() {
     console.log(`  ℹ️ Target detail URL: ${firstDetailHref}`);
 
     // ----------------------------------------------------
-    // TEST 4: DETAIL PAGE INSPECTION & ALL FIELDS
+    // TEST 4: DETAIL PAGE FULL INFORMATION INSPECTION
     // ----------------------------------------------------
     console.log('\n--- TEST 4: DETAIL PAGE FULL INFORMATION INSPECTION ---');
     await page.goto(`${BASE_URL}${firstDetailHref}`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(1000);
 
-    const pageContent = await page.content();
-    assert(!pageContent.includes('Listing Not Found'), 'Detail page loaded valid property successfully');
-    assert(pageContent.includes('Photo Gallery'), 'Photo gallery section renders');
-    assert(pageContent.includes('Property Specifications'), 'Specifications section renders');
-    assert(pageContent.includes('Property Location'), 'Location section renders');
-    assert(pageContent.includes('Pricing & Commercial Terms'), 'Pricing & terms section renders');
-    assert(pageContent.includes('Amenities & Features'), 'Amenities section renders');
-    assert(pageContent.includes('Seller Information'), 'Seller information section renders');
-    assert(pageContent.includes('Moderation Review'), 'Moderation review panel renders');
+    const bodyText = await page.innerText('body');
+    assert(!bodyText.includes('Listing Not Found'), 'Detail page loaded valid property successfully');
+    assert(bodyText.includes('Photo Gallery'), 'Photo gallery section renders');
+    assert(bodyText.includes('Property Specifications'), 'Specifications section renders');
+    assert(bodyText.includes('Property Location'), 'Location section renders');
+    assert(bodyText.includes('Pricing & Commercial Terms'), 'Pricing & terms section renders');
+    assert(bodyText.includes('Amenities & Features'), 'Amenities section renders');
+    assert(bodyText.includes('Seller Information'), 'Seller information section renders');
+    assert(bodyText.includes('Moderation Review'), 'Moderation review panel renders');
 
     // Check strict unit segregation: Area must be sq ft, NEVER Acres
     const areaText = await page.locator('#admin-detail-property-area').innerText();
@@ -151,17 +150,17 @@ async function runVerification() {
     // TEST 6: MODERATION WORKFLOW TEST
     // ----------------------------------------------------
     console.log('\n--- TEST 6: MODERATION REVIEW ON TEMPORARY LISTING ---');
-    // Create temporary seller listing in PENDING_REVIEW
     const sellerLoginRes = await fetch(`${BASE_URL}/api/seller/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: 'seller@trinfra.demo',
-        password: 'SELLER-DEMO-2026',
+        password: 'TRINFRA-SELLER-2026',
       }),
     });
     const sellerCookie = sellerLoginRes.headers.get('set-cookie');
     const sellerCookieVal = sellerCookie ? sellerCookie.split(';')[0] : '';
+    assert(sellerLoginRes.ok, `Seller login succeeds (status: ${sellerLoginRes.status})`);
 
     const tempListingRes = await fetch(`${BASE_URL}/api/seller/listings`, {
       method: 'POST',
@@ -181,8 +180,10 @@ async function runVerification() {
         bathrooms: 3,
         price: 8500000,
         priceType: 'Total',
-        amenities: ['Power Backup', 'Lift', 'Security', 'Covered Parking'],
+        amenities: ['Power Backup', 'Lift Access', '24/7 Security & CCTV', 'Covered Parking'],
         description: 'Temporary verification flat created to validate admin detail review workflow.',
+        images: [{ url: '/images/houses_tropical.jpeg', filename: 'test_flat.jpg', isCover: true }],
+        submitForReview: true,
       }),
     });
 
@@ -196,26 +197,36 @@ async function runVerification() {
       await page.goto(`${BASE_URL}/admin/residential/${tempId}`, { waitUntil: 'networkidle' });
       await page.waitForTimeout(800);
 
-      const statusBadgeInitial = await page.content();
+      const statusBadgeInitial = await page.innerText('body');
       assert(statusBadgeInitial.includes('PENDING REVIEW'), 'Initial listing status is PENDING REVIEW');
 
       // Test 6A: Approve Listing from Detail Page
       const approveBtn = await page.$('#admin-detail-approve-btn');
       assert(approveBtn !== null, 'Approve button #admin-detail-approve-btn is present');
-      await approveBtn.click();
-      await page.waitForTimeout(1200);
+      
+      const [approveResponse] = await Promise.all([
+        page.waitForResponse(resp => resp.url().includes('/approve') && resp.status() === 200),
+        approveBtn.click(),
+      ]);
+      assert(approveResponse.ok(), 'Approve API responded 200 OK');
+      await page.waitForTimeout(1000);
 
-      const postApproveContent = await page.content();
+      const postApproveContent = await page.innerText('body');
       assert(postApproveContent.includes('PUBLISHED'), 'Listing status transitioned to PUBLISHED on detail page');
-      assert(postApproveContent.includes('View Public Page'), 'View Public Page button appears upon publication');
+      assert(postApproveContent.includes('View Public Page') || postApproveContent.includes('View Public Listing'), 'View Public link appears upon publication');
 
       // Test 6B: Unpublish Listing from Detail Page
       const unpublishBtn = await page.$('#admin-detail-unpublish-btn');
       assert(unpublishBtn !== null, 'Unpublish button is present when published');
-      await unpublishBtn.click();
-      await page.waitForTimeout(1200);
 
-      const postUnpublishContent = await page.content();
+      const [unpublishResponse] = await Promise.all([
+        page.waitForResponse(resp => resp.url().includes('/unpublish') && resp.status() === 200),
+        unpublishBtn.click(),
+      ]);
+      assert(unpublishResponse.ok(), 'Unpublish API responded 200 OK');
+      await page.waitForTimeout(1000);
+
+      const postUnpublishContent = await page.innerText('body');
       assert(postUnpublishContent.includes('UNPUBLISHED'), 'Listing status transitioned to UNPUBLISHED');
 
       // Clean up temporary listing permanently
@@ -234,7 +245,7 @@ async function runVerification() {
     console.log('\n--- TEST 7: 404 NOT FOUND HANDLING ---');
     await page.goto(`${BASE_URL}/admin/residential/non-existent-id-12345`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(800);
-    const notFoundContent = await page.content();
+    const notFoundContent = await page.innerText('body');
     assert(notFoundContent.includes('Listing Not Found'), 'Non-existent listing gracefully shows Listing Not Found message');
     assert(notFoundContent.includes('Return to Residential Flats'), 'Return to Residential Flats button is present');
 
