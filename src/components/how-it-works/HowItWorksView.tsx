@@ -174,6 +174,8 @@ export default function HowItWorksView() {
             alt="TRINFRA Land Pooling Process Kerala"
             fill
             priority
+            sizes="100vw"
+            quality={75}
             className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0E2115]/92 via-[#0E2115]/85 to-[#0E2115]" />
@@ -317,6 +319,8 @@ export default function HowItWorksView() {
                   src="/images/landowner.jpeg"
                   alt="Landowner Registering with TRINFRA"
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  quality={75}
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
@@ -450,6 +454,8 @@ export default function HowItWorksView() {
                   src="/images/digital_map.jpeg"
                   alt="Land Information Verification and GIS Mapping"
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  quality={75}
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
@@ -485,6 +491,8 @@ export default function HowItWorksView() {
                   src="/images/agri_land.jpeg"
                   alt="Clustering Adjacent Land Parcels"
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  quality={75}
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
@@ -629,6 +637,8 @@ export default function HowItWorksView() {
                   src="/images/developer.jpeg"
                   alt="Planned Land Development and Professional Execution"
                   fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  quality={75}
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
@@ -932,6 +942,8 @@ export default function HowItWorksView() {
             src="/images/hero_landscape.jpeg"
             alt="TRINFRA Land Pooling Opportunities"
             fill
+            sizes="100vw"
+            quality={60}
             className="object-cover opacity-15"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A1C12] via-[#0A1C12]/90 to-[#0A1C12]" />

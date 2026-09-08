@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,6 +25,43 @@ import { useLiveDataSync } from '@/hooks/useLiveDataSync';
 
 interface ProjectsPageViewProps {
   initialProjects?: Project[];
+}
+
+function ProjectSafeImage({
+  src,
+  alt,
+  priority = false,
+  sizes,
+  className,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+  sizes: string;
+  className?: string;
+}) {
+  const [imgSrc, setImgSrc] = useState<string>(src || '/images/houses_tropical.jpeg');
+
+  useEffect(() => {
+    if (src) setImgSrc(src);
+  }, [src]);
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      fill
+      priority={priority}
+      sizes={sizes}
+      quality={75}
+      className={className}
+      onError={() => {
+        if (imgSrc !== '/images/houses_tropical.jpeg') {
+          setImgSrc('/images/houses_tropical.jpeg');
+        }
+      }}
+    />
+  );
 }
 
 export default function ProjectsPageView({ initialProjects }: ProjectsPageViewProps) {
@@ -53,7 +90,7 @@ export default function ProjectsPageView({ initialProjects }: ProjectsPageViewPr
     onData: (freshProjects) => {
       setProjectsList(freshProjects);
     },
-    intervalMs: 10000,
+    intervalMs: 25000,
   });
 
   const gridSectionRef = useRef<HTMLDivElement>(null);
@@ -353,11 +390,11 @@ export default function ProjectsPageView({ initialProjects }: ProjectsPageViewPr
               <div className="grid grid-cols-1 lg:grid-cols-12">
                 {/* Left Image (55%) */}
                 <div className="lg:col-span-7 relative min-h-[280px] sm:min-h-[340px] lg:min-h-[400px]">
-                  <Image
+                  <ProjectSafeImage
                     src={featured.image}
                     alt={featured.projectName}
-                    fill
                     priority
+                    sizes="(max-width: 1024px) 100vw, 60vw"
                     className="object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -528,10 +565,10 @@ export default function ProjectsPageView({ initialProjects }: ProjectsPageViewPr
                     <div>
                       {/* Image container */}
                       <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">
-                        <Image
+                        <ProjectSafeImage
                           src={project.image}
                           alt={project.projectName}
-                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         {/* Status Badge in top-left */}

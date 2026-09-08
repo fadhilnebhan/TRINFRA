@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowLeft,
   ArrowRight,
@@ -44,6 +45,15 @@ export default function OpportunityDetail({
   const [opportunity, setOpportunity] = useState<Opportunity | null>(initialOpportunity);
   const [similarOpportunities, setSimilarOpportunities] = useState<Opportunity[]>(relatedOpportunities);
   const [loading, setLoading] = useState(!initialOpportunity);
+  const [heroImgSrc, setHeroImgSrc] = useState<string>(
+    initialOpportunity?.image || '/images/houses_tropical.jpeg'
+  );
+
+  useEffect(() => {
+    if (opportunity?.image) {
+      setHeroImgSrc(opportunity.image);
+    }
+  }, [opportunity?.image]);
 
   // Live synchronization for main opportunity & project validity
   useLiveDataSync<Opportunity | null>({
@@ -85,7 +95,7 @@ export default function OpportunityDetail({
       setOpportunity(null);
       setLoading(false);
     },
-    intervalMs: 10000,
+    intervalMs: 25000,
   });
 
   // Live synchronization for similar opportunities recommendations
@@ -109,7 +119,7 @@ export default function OpportunityDetail({
     onData: (freshSimilar) => {
       setSimilarOpportunities(freshSimilar);
     },
-    intervalMs: 12000,
+    intervalMs: 30000,
   });
 
   if (loading) {
@@ -219,11 +229,19 @@ export default function OpportunityDetail({
           <div className="lg:col-span-6">
             <div className="relative rounded-[24px] overflow-hidden shadow-sm border border-gray-100 h-[300px] sm:h-[360px] md:h-[400px] w-full group">
               {/* Image */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={opportunity.image}
+              <Image
+                src={heroImgSrc}
                 alt={opportunity.title}
-                className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-700"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                quality={80}
+                className="object-cover group-hover:scale-103 transition-transform duration-700"
+                onError={() => {
+                  if (heroImgSrc !== '/images/houses_tropical.jpeg') {
+                    setHeroImgSrc('/images/houses_tropical.jpeg');
+                  }
+                }}
               />
 
               {/* Gradient Scrim for subtle script overlay */}

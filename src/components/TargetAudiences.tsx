@@ -1,7 +1,6 @@
-'use client';
-
 import { ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function TargetAudiences() {
   return (
@@ -33,11 +32,14 @@ export default function TargetAudiences() {
             </div>
             
             <div className="absolute right-0 bottom-0 h-full w-[60%] z-0 pointer-events-none">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
+              <Image 
                 src="/images/landowner.jpeg" 
-                alt="Landowner" 
-                className="w-full h-full object-cover object-center [mask-image:linear-gradient(to_right,transparent_0%,black_35%)] opacity-30 md:opacity-100"
+                alt="Landowner"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                quality={75}
+                loading="lazy"
+                className="object-cover object-center [mask-image:linear-gradient(to_right,transparent_0%,black_35%)] opacity-30 md:opacity-100"
               />
             </div>
           </div>
@@ -66,11 +68,14 @@ export default function TargetAudiences() {
             </div>
             
             <div className="absolute right-0 bottom-0 h-full w-[60%] z-0 pointer-events-none">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
+              <Image 
                 src="/images/developer.jpeg" 
-                alt="Developer" 
-                className="w-full h-full object-cover object-[80%_center] [mask-image:linear-gradient(to_right,transparent_0%,black_35%)] opacity-30 md:opacity-100"
+                alt="Developer"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                quality={75}
+                loading="lazy"
+                className="object-cover object-[80%_center] [mask-image:linear-gradient(to_right,transparent_0%,black_35%)] opacity-30 md:opacity-100"
               />
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Building2,
   TrendingUp,
@@ -294,11 +295,13 @@ export default function DeveloperEnquiryView({
       <section className="relative overflow-hidden pt-8 pb-10 border-b border-gray-200/60 bg-white">
         {/* Subtle Right Landscape Image Overlay */}
         <div className="absolute right-0 top-0 bottom-0 w-full md:w-1/2 pointer-events-none opacity-40 select-none overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/images/houses_tropical.jpeg"
             alt="Kerala Landscape"
-            className="w-full h-full object-cover object-right"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            quality={75}
+            className="object-cover object-right"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white" />
@@ -379,12 +382,14 @@ export default function DeveloperEnquiryView({
               ) : (
                 <>
                   {/* Opportunity Preview Image */}
-                  <div className="relative rounded-[14px] overflow-hidden aspect-[16/9] mb-4 group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                  <div className="relative rounded-[14px] overflow-hidden aspect-[16/9] mb-4 group bg-gray-100">
+                    <Image
                       src={selectedOpportunity.image || '/images/houses_tropical.jpeg'}
                       alt={selectedOpportunity.title}
-                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 400px"
+                      quality={75}
+                      className="object-cover group-hover:scale-103 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
 
@@ -1153,12 +1158,14 @@ export default function DeveloperEnquiryView({
                     }`}
                   >
                     {/* Thumbnail */}
-                    <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={opp.image}
+                    <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100 relative">
+                      <Image
+                        src={opp.image || '/images/houses_tropical.jpeg'}
                         alt={opp.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="64px"
+                        quality={70}
+                        className="object-cover"
                       />
                     </div>
 

@@ -1,4 +1,3 @@
-'use client';
 
 import { ShieldCheck, Users, Lock, Scale } from 'lucide-react';
 

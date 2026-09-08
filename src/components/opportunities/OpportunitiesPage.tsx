@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Search,
   X,
@@ -85,7 +86,7 @@ export default function OpportunitiesPage({
       setOpportunitiesList(freshOpportunities);
       setLoading(false);
     },
-    intervalMs: 10000,
+    intervalMs: 25000,
   });
 
   // Automatically adjust current page if filtered items count shrank
@@ -216,10 +217,17 @@ export default function OpportunitiesPage({
     <div>
       {/* ====== HERO HEADER ====== */}
       <section className="relative w-full min-h-[420px] lg:min-h-[480px] flex flex-col justify-end overflow-hidden">
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url("/images/hero_landscape.jpeg")' }}
-        />
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/hero_landscape.jpeg"
+            alt="TRINFRA Land Pooling Opportunities"
+            fill
+            priority
+            sizes="100vw"
+            quality={75}
+            className="object-cover object-center"
+          />
+        </div>
         <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0E2115]/95 via-[#0E2115]/85 to-[#0E2115]/60" />
         <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0E2115] via-transparent to-black/20" />
 

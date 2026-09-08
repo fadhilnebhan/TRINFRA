@@ -45,6 +45,12 @@ export function formatPublicOpportunity(opp: {
     displayStatus = 'New Opportunity';
   }
 
+  // Sanitize image path: ensure fallback to reliable public assets
+  let resolvedImage = opp.image;
+  if (!resolvedImage || resolvedImage.includes('/images/opportunities/')) {
+    resolvedImage = '/images/houses_tropical.jpeg';
+  }
+
   return {
     id: opp.id,
     title: opp.title,
@@ -56,7 +62,7 @@ export function formatPublicOpportunity(opp: {
     areaUnit: 'Acres',
     landowners: opp.landownersCount,
     status: displayStatus,
-    image: opp.image || '/images/opportunities/kozhikode.jpg',
+    image: resolvedImage,
     shortDescription: opp.shortDescription,
     overview: opp.overview,
     highlights: parsedHighlights,

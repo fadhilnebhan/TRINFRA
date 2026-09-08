@@ -1,4 +1,3 @@
-'use client';
 
 import Link from 'next/link';
 import { FileEdit, ShieldCheck, Users, Building2, ArrowRight } from 'lucide-react';

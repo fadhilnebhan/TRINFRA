@@ -3,17 +3,23 @@
 import { ShieldCheck, CheckCircle2, TrendingUp, Handshake, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Hero() {
   return (
     <section className="relative w-full min-h-[85vh] lg:min-h-[750px] flex flex-col pt-28 pb-12 sm:pt-32 sm:pb-16 lg:pt-36 lg:pb-20 overflow-hidden">
       {/* Background Image */}
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-center"
-        style={{
-          backgroundImage: 'url("/images/hero_landscape.jpeg")',
-        }}
-      />
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/hero_landscape.jpeg"
+          alt="Trinfra Land Pooling Landscape"
+          fill
+          priority
+          sizes="100vw"
+          quality={75}
+          className="object-cover object-center"
+        />
+      </div>
       {/* Green/Dark Gradient Overlay */}
       <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0E2115]/95 via-[#0E2115]/85 to-transparent" />
       <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0E2115] via-transparent to-black/40" />

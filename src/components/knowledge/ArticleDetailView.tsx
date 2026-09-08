@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Calendar,
   Clock,
@@ -160,12 +161,15 @@ export default function ArticleDetailView({ article }: ArticleDetailViewProps) {
         </div>
 
         {/* Featured Hero Image */}
-        <div className="relative rounded-[24px] overflow-hidden aspect-[16/7] md:aspect-[21/8] mt-8 shadow-sm border border-gray-100 group">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+        <div className="relative rounded-[24px] overflow-hidden aspect-[16/7] md:aspect-[21/8] mt-8 shadow-sm border border-gray-100 group bg-gray-100">
+          <Image
             src={article.image}
             alt={article.title}
-            className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
+            fill
+            priority
+            sizes="(max-width: 1280px) 100vw, 1280px"
+            quality={80}
+            className="object-cover group-hover:scale-102 transition-transform duration-700"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
@@ -535,12 +539,14 @@ export default function ArticleDetailView({ article }: ArticleDetailViewProps) {
                     href={`/knowledge-centre/${rel.slug}`}
                     className="flex items-center gap-3 group"
                   >
-                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-100 border border-gray-100 relative">
+                      <Image
                         src={rel.image}
                         alt={rel.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        fill
+                        sizes="56px"
+                        quality={70}
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="min-w-0 flex-grow">
@@ -582,12 +588,14 @@ export default function ArticleDetailView({ article }: ArticleDetailViewProps) {
               className="bg-white rounded-[20px] overflow-hidden border border-gray-200/90 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md transition-all group flex flex-col h-full"
             >
               {/* Thumbnail */}
-              <div className="aspect-[16/9] w-full overflow-hidden bg-gray-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="aspect-[16/9] w-full overflow-hidden bg-gray-100 relative">
+                <Image
                   src={rel.image}
                   alt={rel.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  quality={75}
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
 

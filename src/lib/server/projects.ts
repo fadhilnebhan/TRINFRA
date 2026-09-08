@@ -68,7 +68,7 @@ export function formatPublicProject(proj: {
     status: displayStatus,
     developmentStage: displayStage,
     progressPercentage: proj.progressPercentage,
-    image: proj.image || '/images/hero_landscape.jpeg',
+    image: (!proj.image || proj.image.includes('/images/projects/')) ? '/images/houses_tropical.jpeg' : proj.image,
     description: proj.description,
     overview: proj.overview,
     tags: parsedTags,

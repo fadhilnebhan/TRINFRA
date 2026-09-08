@@ -56,7 +56,7 @@ export default function FloatingStats({ liveOpportunitiesCount }: FloatingStatsP
     onData: (freshCount) => {
       setOppCount(freshCount);
     },
-    intervalMs: 10000,
+    intervalMs: 25000,
   });
 
   const stats = [

@@ -38,6 +38,9 @@ prisma/*.db-shm
 
 
 # storage uploads
+/uploads/
+/tmp/
+scratch/
 storage/documents/*
 !storage/documents/.gitkeep
 

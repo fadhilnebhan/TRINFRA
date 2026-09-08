@@ -1,11 +1,14 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { MapPin, ArrowRight, Ruler, Users } from 'lucide-react';
 import type { Opportunity } from '@/lib/opportunitiesData';
 
 interface OpportunityCardProps {
   opportunity: Opportunity;
+  priority?: boolean;
 }
 
 const statusColors: Record<string, string> = {
@@ -14,19 +17,37 @@ const statusColors: Record<string, string> = {
   'New Opportunity': 'bg-primary/80',
 };
 
-export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
+export default function OpportunityCard({ opportunity, priority = false }: OpportunityCardProps) {
+  const [imgSrc, setImgSrc] = useState<string>(
+    opportunity.image || '/images/houses_tropical.jpeg'
+  );
+
+  useEffect(() => {
+    if (opportunity.image) {
+      setImgSrc(opportunity.image);
+    }
+  }, [opportunity.image]);
+
   return (
     <div className="flex flex-col bg-white rounded-[20px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow group">
       {/* Image Area */}
-      <div className="h-56 overflow-hidden relative">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={opportunity.image}
+      <div className="h-56 overflow-hidden relative bg-gray-100">
+        <Image
+          src={imgSrc}
           alt={opportunity.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          fill
+          priority={priority}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          quality={75}
+          className="object-cover group-hover:scale-105 transition-transform duration-700"
+          onError={() => {
+            if (imgSrc !== '/images/houses_tropical.jpeg') {
+              setImgSrc('/images/houses_tropical.jpeg');
+            }
+          }}
         />
         <div
-          className={`absolute top-4 left-4 ${statusColors[opportunity.status] || 'bg-black/60'} backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1.5 rounded uppercase tracking-wider`}
+          className={`absolute top-4 left-4 z-10 ${statusColors[opportunity.status] || 'bg-black/60'} backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1.5 rounded uppercase tracking-wider`}
         >
           {opportunity.status}
         </div>
@@ -38,7 +59,7 @@ export default function OpportunityCard({ opportunity }: OpportunityCardProps) {
           {opportunity.title}
         </h3>
         <div className="flex items-center text-gray-500 text-[14px] mb-4">
-          <MapPin size={14} className="mr-1.5 shrink-0" />
+          <MapPin size={14} className="mr-1.5 shrink-0 text-accent" />
           {opportunity.location}
         </div>
 

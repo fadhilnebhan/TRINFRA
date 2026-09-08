@@ -45,8 +45,15 @@ export async function GET(
       }
     }
 
+    // If not found in ephemeral storage (e.g. Vercel instance recycled),
+    // fallback gracefully to a canonical public image so public cards never break.
     if (!foundPath) {
-      return new NextResponse('Image not found', { status: 404 });
+      const fallbackPublicPath = path.join(process.cwd(), 'public', 'images', 'houses_tropical.jpeg');
+      if (fs.existsSync(fallbackPublicPath)) {
+        foundPath = fallbackPublicPath;
+      } else {
+        return new NextResponse('Image not found', { status: 404 });
+      }
     }
 
     const fileBuffer = fs.readFileSync(foundPath);

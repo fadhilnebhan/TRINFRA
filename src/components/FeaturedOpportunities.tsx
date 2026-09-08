@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { MapPin, ArrowRight, Map as MapIcon, FolderSearch } from 'lucide-react';
+import { ArrowRight, Map as MapIcon, FolderSearch } from 'lucide-react';
 import type { Opportunity } from '@/lib/opportunitiesData';
 import { useLiveDataSync } from '@/hooks/useLiveDataSync';
+import OpportunityCard from '@/components/opportunities/OpportunityCard';
 
 interface FeaturedOpportunitiesProps {
   opportunities?: Opportunity[];
@@ -33,7 +34,7 @@ export default function FeaturedOpportunities({
     onData: (freshOpps) => {
       setItems(freshOpps);
     },
-    intervalMs: 10000,
+    intervalMs: 25000,
   });
   return (
     <section id="opportunities" className="py-12 pb-20 md:pb-24 bg-background">
@@ -74,64 +75,10 @@ export default function FeaturedOpportunities({
               </div>
             ) : (
               items.map((opportunity) => (
-                <div
+                <OpportunityCard
                   key={opportunity.id}
-                  className="flex flex-col bg-white rounded-[20px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow"
-                >
-                  {/* Image Area */}
-                  <div className="h-56 overflow-hidden relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={opportunity.image || '/images/houses_tropical.jpeg'}
-                      alt={opportunity.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1.5 rounded uppercase tracking-wider">
-                      {opportunity.status}
-                    </div>
-                  </div>
-
-                  {/* Content Area */}
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-[22px] font-bold text-foreground mb-1 leading-tight">
-                      {opportunity.title}
-                    </h3>
-                    <div className="flex items-center text-gray-500 text-[14px] mb-6">
-                      <MapPin size={14} className="mr-1.5" />
-                      {opportunity.location}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div>
-                        <div className="text-[11px] text-gray-400 mb-1 uppercase tracking-wider font-semibold">
-                          Approx. Area
-                        </div>
-                        <div className="font-bold text-foreground text-[16px]">
-                          {opportunity.area} {opportunity.areaUnit || 'Acres'}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[11px] text-gray-400 mb-1 uppercase tracking-wider font-semibold">
-                          Participation
-                        </div>
-                        <div className="font-bold text-foreground text-[16px]">
-                          {opportunity.landowners}{' '}
-                          <span className="text-[12px] font-normal text-gray-500">
-                            Landowners
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Link
-                      href={`/opportunities/${opportunity.id}`}
-                      className="mt-auto pt-4 border-t border-gray-100 flex items-center text-[14px] font-bold text-accent group cursor-pointer hover:text-accent-hover transition-colors"
-                    >
-                      View Details
-                      <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </div>
-                </div>
+                  opportunity={opportunity}
+                />
               ))
             )}
           </div>

@@ -9,7 +9,7 @@ export interface UseLiveDataSyncOptions<T> {
   onData: (data: T) => void;
   /** Optional initial data to seed the comparison cache */
   initialData?: T | null;
-  /** Polling interval in milliseconds while tab is visible (default: 10000ms = 10s) */
+  /** Polling interval in milliseconds while tab is visible (default: 25000ms = 25s) */
   intervalMs?: number;
   /** Optional custom comparator to determine if new data differs from current data */
   isEqual?: (prev: T | null, next: T) => boolean;
@@ -31,21 +31,40 @@ function defaultIsEqual<T>(prev: T | null, next: T): boolean {
   }
 }
 
+// In-memory request deduplication cache to prevent simultaneous duplicate fetches
+const inFlightRequests = new Map<string, Promise<unknown>>();
+
+export function dedupeFetch<T>(key: string, fetcher: () => Promise<T>, ttlMs = 2000): Promise<T> {
+  const existing = inFlightRequests.get(key);
+  if (existing) {
+    return existing as Promise<T>;
+  }
+
+  const promise = fetcher().finally(() => {
+    setTimeout(() => {
+      inFlightRequests.delete(key);
+    }, ttlMs);
+  });
+
+  inFlightRequests.set(key, promise);
+  return promise;
+}
+
 /**
  * Reusable client-side live-sync hook.
  *
  * Silently polls the database API at a regular interval while the page is visible,
- * and immediately triggers a sync when the user switches back to the tab (visibilitychange)
+ * and triggers a sync when the user switches back to the tab (visibilitychange)
  * or when the browser window regains focus.
  *
  * Zero-budget, zero paid third-party infrastructure.
- * Cancels pending fetches on unmount and prevents concurrent overlapping fetches.
+ * Cancels pending fetches on unmount, skips redundant SSR fetches, and prevents concurrent overlapping fetches.
  */
 export function useLiveDataSync<T>({
   fetcher,
   onData,
   initialData = null,
-  intervalMs = 10000,
+  intervalMs = 25000,
   isEqual = defaultIsEqual,
   onNotFound,
   runOnMount,
@@ -67,6 +86,7 @@ export function useLiveDataSync<T>({
   const inFlightRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // If initialData was already provided by SSR, do not fetch immediately on mount
   const shouldRunOnMount = runOnMount !== undefined ? runOnMount : initialData === null;
 
   const executeSync = useCallback(async () => {
@@ -122,7 +142,7 @@ export function useLiveDataSync<T>({
       executeSync();
     }
 
-    // Periodic timer
+    // Periodic timer (default 25s)
     const timer = setInterval(() => {
       executeSync();
     }, intervalMs);
