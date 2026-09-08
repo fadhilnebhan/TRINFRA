@@ -61,10 +61,14 @@ export async function POST(request: Request) {
       success: true,
       image: stored,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in /api/seller/upload-image:', error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to upload property image';
     return NextResponse.json(
-      { success: false, error: 'Failed to upload property image' },
+      { success: false, error: message },
       { status: 500 }
     );
   }

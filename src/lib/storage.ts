@@ -41,13 +41,10 @@ export function validateImageMagicBytes(buffer: Buffer, mimeType: string): boole
 }
 
 /**
- * Get filesystem storage directory for residential uploads
+ * Get filesystem storage directory for residential uploads (Local development only)
  */
 export function getResidentialStorageDir(): string {
-  const dir = process.env.VERCEL
-    ? path.join('/tmp', 'storage', 'residential')
-    : path.join(process.cwd(), 'public', 'uploads', 'residential');
-
+  const dir = path.join(process.cwd(), 'public', 'uploads', 'residential');
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -56,6 +53,8 @@ export function getResidentialStorageDir(): string {
 
 /**
  * Store user-uploaded residential image persistently
+ * In production/Vercel: Strictly uploads to Supabase Storage 'residential-images' bucket.
+ * Silently falling back to ephemeral /tmp storage is strictly prohibited in production.
  */
 export async function storeResidentialImage(
   buffer: Buffer,
@@ -65,18 +64,25 @@ export async function storeResidentialImage(
   const ext = path.extname(originalFilename).toLowerCase() || '.jpg';
   const randomId = crypto.randomBytes(8).toString('hex');
   const storageKey = `res_${Date.now()}_${randomId}${ext}`;
+  const isProductionVercel = Boolean(process.env.VERCEL) || process.env.NODE_ENV === 'production';
 
-  // Check if Supabase Storage API key is provided
+  // Check if Supabase Storage credentials are provided
   const supabaseKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.SUPABASE_KEY;
 
-  const supabaseProjectRef = 'hbongewkewhjovhfpxqb';
+  const supabaseUrl = (
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    'https://hbongewkewhjovhfpxqb.supabase.co'
+  ).replace(/\/$/, '');
+
+  const bucketName = 'residential-images';
 
   if (supabaseKey) {
     try {
-      const uploadUrl = `https://${supabaseProjectRef}.supabase.co/storage/v1/object/residential-images/${storageKey}`;
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/${bucketName}/${storageKey}`;
       const uploadRes = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
@@ -88,44 +94,50 @@ export async function storeResidentialImage(
       });
 
       if (uploadRes.ok) {
-        const publicUrl = `https://${supabaseProjectRef}.supabase.co/storage/v1/object/public/residential-images/${storageKey}`;
+        const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucketName}/${storageKey}`;
         return {
           storageKey,
           url: publicUrl,
-          filename: originalFilename,
+          filename: path.basename(originalFilename),
           mimeType,
           size: buffer.length,
         };
       } else {
         const errText = await uploadRes.text();
-        console.warn('Supabase storage upload returned error, falling back to local:', errText);
+        const errMsg = `Supabase Storage upload returned HTTP ${uploadRes.status}: ${errText}`;
+        console.error(errMsg);
+        if (isProductionVercel) {
+          throw new Error(errMsg);
+        }
       }
-    } catch (supabaseErr) {
-      console.warn('Supabase storage upload failed, falling back to local:', supabaseErr);
+    } catch (supabaseErr: any) {
+      console.error('Supabase storage upload error:', supabaseErr);
+      if (isProductionVercel) {
+        throw new Error(
+          supabaseErr instanceof Error
+            ? supabaseErr.message
+            : 'Supabase Storage upload failed'
+        );
+      }
     }
+  } else if (isProductionVercel) {
+    // In Vercel production: DO NOT silently fall back to /tmp. Return clear server-side error.
+    throw new Error(
+      "Supabase Storage credentials missing: SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY must be configured in Vercel environment. Ephemeral /tmp fallback is disabled in production."
+    );
   }
 
-  // Filesystem storage fallback
+  // Local development filesystem storage fallback ONLY
   const storageDir = getResidentialStorageDir();
   const filePath = path.join(storageDir, storageKey);
   fs.writeFileSync(filePath, buffer);
 
-  // Also write to public/uploads/residential if running locally
-  if (!process.env.VERCEL) {
-    const publicDir = path.join(process.cwd(), 'public', 'uploads', 'residential');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
-    }
-    fs.writeFileSync(path.join(publicDir, storageKey), buffer);
-  }
-
-  // Served via /api/residential/images/[filename]
-  const publicUrl = `/api/residential/images/${storageKey}`;
+  const publicUrl = `/uploads/residential/${storageKey}`;
 
   return {
     storageKey,
     url: publicUrl,
-    filename: originalFilename,
+    filename: path.basename(originalFilename),
     mimeType,
     size: buffer.length,
   };
