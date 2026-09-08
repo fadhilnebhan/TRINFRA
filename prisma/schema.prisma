@@ -9,14 +9,18 @@ generator client {
 }
 
 model User {
-  id           String      @id @default(cuid())
-  email        String      @unique
+  id           String               @id @default(cuid())
+  email        String               @unique
   passwordHash String
   fullName     String
-  role         String      @default("ADMIN") // ADMIN | SUPERADMIN | REVIEWER
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  phone        String?
+  companyName  String?
+  role         String               @default("ADMIN") // ADMIN | SELLER | BUYER
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
   adminNotes   AdminNote[]
+  listings     ResidentialListing[]
+  enquiries    ResidentialEnquiry[]
 }
 
 model Landowner {
@@ -196,3 +200,88 @@ model Notification {
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
+
+model ResidentialListing {
+  id              String             @id @default(cuid())
+  sellerId        String
+  seller          User               @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  title           String
+  slug            String             @unique
+  propertyType    String             // Apartment | Flat | Villa | House | Penthouse
+  listingPurpose  String             // Sale | Rent
+  description     String
+  district        String             // 14 Kerala districts
+  locality        String
+  address         String?
+  pincode         String?
+  latitude        Float?
+  longitude       Float?
+  area            Float
+  areaUnit        String             @default("sq ft")
+  bedrooms        Int
+  bathrooms       Int
+  floor           Int?
+  totalFloors     Int?
+  furnishedStatus String?            // Unfurnished | Semi-Furnished | Fully Furnished
+  parking         String?            // Covered | Open | None
+  balcony         Int?
+  propertyAge     String?            // Under Construction | Ready to Move | 0-1 years | 1-5 years | 5+ years
+  facing          String?            // East | West | North | South | North-East | North-West | South-East | South-West
+  price           Float
+  priceType       String             @default("Total") // Total | Per sq ft | Per Month
+  negotiable      Boolean            @default(false)
+  amenities       String[]           @default([])
+  status          String             @default("DRAFT") // DRAFT | PENDING_REVIEW | PUBLISHED | REJECTED | UNPUBLISHED | SOLD | RENTED | ARCHIVED
+  rejectionReason String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  publishedAt     DateTime?
+
+  images          ResidentialImage[]
+  enquiries       ResidentialEnquiry[]
+
+  @@index([district, status])
+  @@index([sellerId])
+  @@index([propertyType])
+  @@index([listingPurpose])
+  @@index([price])
+  @@index([bedrooms])
+  @@index([status, createdAt])
+}
+
+model ResidentialImage {
+  id         String             @id @default(cuid())
+  listingId  String
+  listing    ResidentialListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  storageKey String
+  url        String
+  filename   String
+  mimeType   String
+  size       Int
+  sortOrder  Int                @default(0)
+  isCover    Boolean            @default(false)
+  createdAt  DateTime           @default(now())
+
+  @@index([listingId, sortOrder])
+}
+
+model ResidentialEnquiry {
+  id        String             @id @default(cuid())
+  listingId String
+  listing   ResidentialListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerId   String?
+  buyer     User?              @relation(fields: [buyerId], references: [id], onDelete: SetNull)
+  name      String
+  email     String
+  phone     String
+  message   String
+  status    String             @default("NEW") // NEW | CONTACTED | IN_PROGRESS | CLOSED
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([listingId])
+  @@index([buyerId])
+  @@index([status])
+  @@index([createdAt])
+}
+

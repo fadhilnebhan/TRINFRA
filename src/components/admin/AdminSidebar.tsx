@@ -15,6 +15,7 @@ import {
   X,
   ExternalLink,
   LogOut,
+  Home,
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { label: 'Overview', href: '/admin', icon: LayoutDashboard },
   { label: 'Landowner Leads', href: '/admin/landowners', icon: Users },
   { label: 'Developer Enquiries', href: '/admin/enquiries', icon: Building2 },
+  { label: 'Residential Flats', href: '/admin/residential', icon: Home },
   { label: 'Opportunities', href: '/admin/opportunities', icon: Compass },
   { label: 'Projects', href: '/admin/projects', icon: FolderKanban },
   { label: 'Verification', href: '/admin/verification', icon: ShieldCheck },
