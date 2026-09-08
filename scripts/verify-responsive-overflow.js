@@ -16,8 +16,10 @@ const VIEWPORTS = [
 
 const ROUTES = [
   '/',
+  '/opportunities',
   '/residential',
   '/residential/modern-2-bhk-urban-flat-kakkanad-infopark',
+  '/register',
   '/seller',
   '/seller/login',
   '/admin/residential'
