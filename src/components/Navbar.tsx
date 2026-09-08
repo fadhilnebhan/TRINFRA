@@ -4,11 +4,19 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
+import PropertyChoiceModal from '@/components/common/PropertyChoiceModal';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isChoiceModalOpen, setIsChoiceModalOpen] = useState(false);
   const pathname = usePathname();
+
+  const isLandContext =
+    pathname?.startsWith('/opportunities') ||
+    pathname === '/register' ||
+    pathname === '/register-your-land';
+  const isResidentialContext = pathname?.startsWith('/residential');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -133,14 +141,34 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Desktop Register Land CTA Button */}
+          {/* Desktop Contextual / Unified CTA Button */}
           <div className="hidden xl:flex items-center">
-            <Link
-              href="/register"
-              className="bg-primary-btn border border-white/10 text-white px-6 py-2.5 rounded text-[13px] font-bold hover:bg-primary-light transition-colors"
-            >
-              Register Land
-            </Link>
+            {isLandContext ? (
+              <Link
+                href="/register"
+                id="navbar-land-cta"
+                className="bg-primary-btn border border-white/10 text-white px-6 py-2.5 rounded text-[13px] font-bold hover:bg-primary-light transition-colors"
+              >
+                Register Your Land
+              </Link>
+            ) : isResidentialContext ? (
+              <Link
+                href="/seller/listings/new"
+                id="navbar-residential-cta"
+                className="bg-accent border border-white/10 text-white px-6 py-2.5 rounded text-[13px] font-bold hover:bg-accent-hover transition-colors shadow-sm"
+              >
+                List Your Property
+              </Link>
+            ) : (
+              <button
+                type="button"
+                id="navbar-register-list-cta"
+                onClick={() => setIsChoiceModalOpen(true)}
+                className="bg-primary-btn border border-white/10 text-white px-6 py-2.5 rounded text-[13px] font-bold hover:bg-primary-light transition-colors cursor-pointer"
+              >
+                Register / List Property
+              </button>
+            )}
           </div>
 
           {/* Mobile Hamburger / Close Button */}
@@ -199,13 +227,37 @@ export default function Navbar() {
             })}
 
             <div className="pt-4 mt-2 border-t border-white/10">
-              <Link
-                href="/register-your-land"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block text-center bg-primary-btn border border-white/15 text-white px-6 py-3 rounded-md text-[14px] font-bold hover:bg-primary-light transition-all shadow-md active:scale-[0.99]"
-              >
-                Register Your Land
-              </Link>
+              {isLandContext ? (
+                <Link
+                  href="/register"
+                  id="mobile-nav-land-cta"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block text-center bg-primary-btn border border-white/15 text-white px-6 py-3 rounded-md text-[14px] font-bold hover:bg-primary-light transition-all shadow-md active:scale-[0.99]"
+                >
+                  Register Your Land
+                </Link>
+              ) : isResidentialContext ? (
+                <Link
+                  href="/seller/listings/new"
+                  id="mobile-nav-residential-cta"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block text-center bg-accent border border-white/15 text-white px-6 py-3 rounded-md text-[14px] font-bold hover:bg-accent-hover transition-all shadow-md active:scale-[0.99]"
+                >
+                  List Your Property
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  id="mobile-nav-register-list-cta"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsChoiceModalOpen(true);
+                  }}
+                  className="w-full block text-center bg-primary-btn border border-white/15 text-white px-6 py-3 rounded-md text-[14px] font-bold hover:bg-primary-light transition-all shadow-md active:scale-[0.99] cursor-pointer"
+                >
+                  Register / List Property
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -219,6 +271,12 @@ export default function Navbar() {
           aria-hidden="true"
         />
       )}
+
+      {/* Unified Property Registration Choice Modal */}
+      <PropertyChoiceModal
+        isOpen={isChoiceModalOpen}
+        onClose={() => setIsChoiceModalOpen(false)}
+      />
     </nav>
   );
 }

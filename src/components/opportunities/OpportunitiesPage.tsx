@@ -267,11 +267,22 @@ export default function OpportunitiesPage({
               high-impact developments.
             </p>
 
-            {/* Floating badge */}
-            <div className="hidden lg:inline-flex items-center px-4 py-2 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 mt-8 gap-3">
-              <span className="text-white/60 text-[13px]">Stronger</span>
-              <span className="w-1 h-1 rounded-full bg-accent" />
-              <span className="text-white/60 text-[13px]">Greater Value</span>
+            {/* Contextual Primary Action & Floating badge */}
+            <div className="flex flex-wrap items-center gap-4 mt-8">
+              <Link
+                href="/register"
+                id="opportunities-register-land-cta"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-md bg-primary-btn hover:bg-primary-light text-white text-[14px] font-bold shadow-lg border border-white/10 transition-all hover:translate-x-0.5 active:scale-[0.98]"
+              >
+                <span>Register Your Land</span>
+                <ArrowRight size={16} />
+              </Link>
+
+              <div className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 gap-3">
+                <span className="text-white/70 text-[13px]">Stronger</span>
+                <span className="w-1 h-1 rounded-full bg-accent" />
+                <span className="text-white/70 text-[13px]">Greater Value</span>
+              </div>
             </div>
           </motion.div>
         </div>

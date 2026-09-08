@@ -119,7 +119,10 @@ function SellerLoginForm() {
       <div className="mt-6 pt-6 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-500">
           Don’t have a seller account yet?{' '}
-          <Link href="/seller/register" className="font-semibold text-primary hover:underline">
+          <Link
+            href={redirectPath !== '/seller' ? `/seller/register?redirect=${encodeURIComponent(redirectPath)}` : '/seller/register'}
+            className="font-semibold text-primary hover:underline"
+          >
             Register as a Seller
           </Link>
         </p>

@@ -242,14 +242,15 @@ export default function ResidentialPage({
               </p>
             </div>
 
-            {/* Seller Portal Callout Action */}
+            {/* Contextual Residential Primary Action */}
             <div className="shrink-0">
               <button
-                onClick={() => router.push('/seller')}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold shadow-panel transition-all hover:scale-[1.02] active:scale-[0.98]"
+                id="residential-list-property-cta"
+                onClick={() => router.push('/seller/listings/new')}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold shadow-panel transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
                 <Building2 size={16} />
-                <span>Seller Portal / List Property</span>
+                <span>List Your Property</span>
               </button>
             </div>
           </div>

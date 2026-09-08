@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { ShieldCheck, CheckCircle2, TrendingUp, Handshake, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
+import PropertyChoiceModal from '@/components/common/PropertyChoiceModal';
 
 export default function Hero() {
+  const [isChoiceModalOpen, setIsChoiceModalOpen] = useState(false);
   return (
     <section className="relative w-full min-h-[85vh] lg:min-h-[750px] flex flex-col pt-28 pb-12 sm:pt-32 sm:pb-16 lg:pt-36 lg:pb-20 overflow-hidden">
       {/* Background Image */}
@@ -74,14 +77,24 @@ export default function Hero() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-10 sm:mb-14">
-            <Link href="/register" className="w-full sm:w-auto bg-primary-btn border border-white/10 text-white px-7 sm:px-8 py-3.5 rounded-md text-[15px] font-semibold hover:bg-[#07190e] transition-colors flex items-center justify-center gap-2 group shadow-lg">
-              Register Your Land
+            <button
+              type="button"
+              id="hero-register-list-cta"
+              onClick={() => setIsChoiceModalOpen(true)}
+              className="w-full sm:w-auto bg-primary-btn border border-white/10 text-white px-7 sm:px-8 py-3.5 rounded-md text-[15px] font-semibold hover:bg-[#07190e] transition-colors flex items-center justify-center gap-2 group shadow-lg cursor-pointer"
+            >
+              <span>Register / List Property</span>
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </button>
             <Link href="/opportunities" className="w-full sm:w-auto bg-transparent border border-white/30 text-white px-7 sm:px-8 py-3.5 rounded-md text-[15px] font-semibold hover:bg-white/5 transition-colors shadow-sm text-center justify-center">
               Explore Opportunities
             </Link>
           </div>
+
+          <PropertyChoiceModal
+            isOpen={isChoiceModalOpen}
+            onClose={() => setIsChoiceModalOpen(false)}
+          />
         </motion.div>
       </div>
 
