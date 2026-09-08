@@ -64,19 +64,21 @@ export default function SellerRegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] flex flex-col justify-center py-12 sm:px-6 lg:px-8 pt-24 pb-16">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center mx-auto mb-3 shadow-md">
+    <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8 pt-24 pb-16">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center px-4">
+        <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center mx-auto mb-3.5 shadow-md">
           <Building2 size={24} />
         </div>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Create Seller Account</h1>
-        <p className="mt-1.5 text-xs sm:text-sm text-gray-500">
+        <h1 className="text-2xl sm:text-3xl font-heading font-bold text-gray-900 tracking-tight">
+          Create Seller Account
+        </h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-gray-500 max-w-sm mx-auto">
           List your residential flats, apartments, and villas directly to verified Kerala buyers
         </p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <div className="bg-white py-8 px-6 sm:px-10 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="bg-white py-8 px-6 sm:px-10 rounded-2xl border border-gray-200/80 shadow-panel">
           {error && (
             <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
               <AlertCircle size={15} className="shrink-0 mt-0.5" />
@@ -95,7 +97,7 @@ export default function SellerRegisterPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Mathew Thomas"
-                  className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-10 pr-3.5 py-2.5 min-h-[42px] text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
             </div>
@@ -110,7 +112,7 @@ export default function SellerRegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. mathew@example.com"
-                  className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-10 pr-3.5 py-2.5 min-h-[42px] text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
             </div>
@@ -125,13 +127,13 @@ export default function SellerRegisterPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="e.g. +91 98470 12345"
-                  className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-10 pr-3.5 py-2.5 min-h-[42px] text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Company / Agency Name (Optional)</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Company / Agency (Optional)</label>
               <div className="relative">
                 <Briefcase size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -139,7 +141,7 @@ export default function SellerRegisterPage() {
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="e.g. Skyline Skyline Developers"
-                  className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full pl-10 pr-3.5 py-2.5 min-h-[42px] text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
             </div>
@@ -155,7 +157,7 @@ export default function SellerRegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Min 6 chars"
-                    className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full pl-10 pr-3.5 py-2.5 min-h-[42px] text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               </div>
@@ -170,7 +172,7 @@ export default function SellerRegisterPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter password"
-                    className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    className="w-full pl-10 pr-3.5 py-2.5 min-h-[42px] text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
                 </div>
               </div>
@@ -184,15 +186,15 @@ export default function SellerRegisterPage() {
                 onChange={(e) => setAgreeTerms(e.target.checked)}
                 className="mt-0.5 rounded text-primary focus:ring-primary"
               />
-              <label htmlFor="terms" className="text-xs text-gray-500">
-                I agree to the TRINFRA Marketplace Terms and consent to listing moderation review.
+              <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed">
+                I agree to TRINFRA Marketplace Terms and consent to listing verification.
               </label>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary/90 shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full py-2.5 min-h-[44px] rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary-btn shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             >
               <span>{loading ? 'Creating Account...' : 'Register as Seller'}</span>
               <ArrowRight size={14} />

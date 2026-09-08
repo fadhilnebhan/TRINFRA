@@ -187,7 +187,7 @@ export default function SellerEnquiriesPage() {
                     </div>
 
                     {/* Status Changer Buttons */}
-                    <div className="flex items-center gap-2 self-end lg:self-center">
+                    <div className="flex flex-wrap items-center gap-1.5 self-start lg:self-center pt-2 lg:pt-0">
                       <span className="text-xs text-gray-400 font-medium mr-1">Status:</span>
                       {['NEW', 'CONTACTED', 'IN_PROGRESS', 'CLOSED'].map((st) => (
                         <button

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Building2, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
+import { Building2, Lock, Mail, ArrowRight, AlertCircle, KeyRound } from 'lucide-react';
 
 function SellerLoginForm() {
   const router = useRouter();
@@ -43,8 +43,31 @@ function SellerLoginForm() {
     }
   };
 
+  const fillDemoSeller = () => {
+    setEmail('seller@trinfra.demo');
+    setPassword('TRINFRA-SELLER-2026');
+  };
+
   return (
-    <div className="bg-white py-8 px-6 sm:px-10 rounded-2xl border border-gray-100 shadow-sm">
+    <div className="bg-white py-8 px-6 sm:px-10 rounded-2xl border border-gray-200/80 shadow-panel">
+      {/* Quick Demo Credentials Autofill Helper */}
+      <div className="mb-5 p-3 rounded-xl bg-gray-50 border border-gray-200/80 text-xs flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <KeyRound size={14} className="text-accent shrink-0" />
+          <div className="truncate">
+            <span className="font-semibold text-gray-800">Demo Seller: </span>
+            <span className="text-gray-500 font-mono text-[11px]">seller@trinfra.demo</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={fillDemoSeller}
+          className="text-xs font-semibold text-primary hover:text-primary-btn bg-white hover:bg-gray-100 border border-gray-200 px-2.5 py-1 rounded-lg shrink-0 transition-colors"
+        >
+          Auto-fill
+        </button>
+      </div>
+
       {error && (
         <div className="mb-5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
           <AlertCircle size={15} className="shrink-0 mt-0.5" />
@@ -63,7 +86,7 @@ function SellerLoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seller@trinfra.demo"
-              className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full pl-10 pr-3.5 py-2.5 min-h-[42px] text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
         </div>
@@ -78,7 +101,7 @@ function SellerLoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full pl-10 pr-3.5 py-2.5 min-h-[42px] text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
         </div>
@@ -86,7 +109,7 @@ function SellerLoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary/90 shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full py-2.5 min-h-[44px] rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary-btn shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-60"
         >
           <span>{loading ? 'Signing in...' : 'Sign in to Seller Dashboard'}</span>
           <ArrowRight size={14} />
@@ -107,13 +130,15 @@ function SellerLoginForm() {
 
 export default function SellerLoginPage() {
   return (
-    <div className="min-h-screen bg-[#fafaf9] flex flex-col justify-center py-12 sm:px-6 lg:px-8 pt-24">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center mx-auto mb-3 shadow-md">
+    <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8 pt-24">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center px-4">
+        <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center mx-auto mb-3.5 shadow-md">
           <Building2 size={24} />
         </div>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Seller Portal</h1>
-        <p className="mt-1.5 text-xs sm:text-sm text-gray-500">
+        <h1 className="text-2xl sm:text-3xl font-heading font-bold text-gray-900 tracking-tight">
+          Seller Portal
+        </h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-gray-500 max-w-sm mx-auto">
           Sign in to manage your flats, apartments, and residential properties
         </p>
       </div>

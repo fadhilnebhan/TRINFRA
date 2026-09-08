@@ -93,7 +93,7 @@ export default function SellerDashboardPage() {
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to submit listing');
       }
-      setStatusMessage({ type: 'success', text: 'Listing submitted for admin review!' });
+      setStatusMessage({ type: 'success', text: 'Listing submitted for admin verification!' });
       await fetchSellerData();
     } catch (err: any) {
       setStatusMessage({ type: 'error', text: err.message });
@@ -132,120 +132,123 @@ export default function SellerDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] text-gray-900 pb-20 pt-24">
-      {/* Top Seller Bar */}
-      <div className="bg-white border-b border-gray-100 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-lg shadow-xs">
-                <Building2 size={24} />
+    <div className="min-h-screen bg-background text-foreground pb-20 pt-20 sm:pt-24">
+      {/* ================= TOP SELLER BAR ================= */}
+      <div className="bg-white border-b border-gray-200/80 py-5 sm:py-6">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-bold text-lg shadow-xs shrink-0">
+                <Building2 size={22} />
               </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-heading font-bold text-gray-900 tracking-tight truncate">
                   Seller Dashboard
                 </h1>
-                <p className="text-xs text-gray-500">
-                  Welcome back, <span className="font-semibold text-gray-800">{seller?.fullName || 'Seller'}</span>
-                  {seller?.companyName ? ` (${seller.companyName})` : ''}
+                <p className="text-xs text-gray-500 truncate">
+                  Welcome, <span className="font-semibold text-gray-800">{seller?.fullName || 'Seller'}</span>
+                  {seller?.companyName ? ` • ${seller.companyName}` : ''}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Header Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2">
               <Link
                 href="/seller/enquiries"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[38px] text-xs font-semibold rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
               >
                 <MessageSquare size={14} />
                 <span>Enquiries ({stats.totalEnquiries})</span>
               </Link>
               <Link
                 href="/seller/listings/new"
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-primary text-white hover:bg-primary/90 shadow-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[38px] text-xs font-semibold rounded-xl bg-primary hover:bg-primary-btn text-white shadow-xs transition-all"
               >
                 <PlusCircle size={14} />
-                <span>Create New Listing</span>
+                <span>New Listing</span>
               </Link>
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center gap-1 px-3 py-2 text-xs font-semibold rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                className="p-2 min-h-[38px] min-w-[38px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center"
                 title="Sign out"
+                aria-label="Sign out"
               >
-                <LogOut size={15} />
+                <LogOut size={16} />
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        {/* Status Notification */}
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 pt-6 sm:pt-8">
+        {/* Status Alert Notification */}
         {statusMessage && (
           <div
-            className={`mb-6 p-4 rounded-xl text-xs font-medium border flex items-center justify-between ${
+            className={`mb-6 p-3.5 sm:p-4 rounded-xl text-xs font-medium border flex items-center justify-between ${
               statusMessage.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                ? 'bg-primary/5 text-primary border-primary/20'
                 : 'bg-red-50 text-red-800 border-red-200'
             }`}
           >
             <span>{statusMessage.text}</span>
             <button
               onClick={() => setStatusMessage(null)}
-              className="text-xs opacity-60 hover:opacity-100 font-bold"
+              className="text-xs opacity-60 hover:opacity-100 font-bold ml-2"
+              aria-label="Dismiss message"
             >
               ✕
             </button>
           </div>
         )}
 
-        {/* Metric Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block mb-1">
+        {/* Metric Cards Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5 mb-6 sm:mb-8">
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
               Total
             </span>
-            <span className="text-2xl font-black text-gray-900">{stats.total}</span>
+            <span className="text-xl sm:text-2xl font-heading font-bold text-gray-900">{stats.total}</span>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-emerald-100/60 shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 block mb-1 flex items-center gap-1">
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-primary/20 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-primary block mb-1 flex items-center gap-1">
               <CheckCircle size={12} /> Published
             </span>
-            <span className="text-2xl font-black text-emerald-700">{stats.published}</span>
+            <span className="text-xl sm:text-2xl font-heading font-bold text-primary">{stats.published}</span>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-amber-100/60 shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-600 block mb-1 flex items-center gap-1">
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-accent/30 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-accent block mb-1 flex items-center gap-1">
               <Clock size={12} /> Under Review
             </span>
-            <span className="text-2xl font-black text-amber-700">{stats.pending}</span>
+            <span className="text-xl sm:text-2xl font-heading font-bold text-accent">{stats.pending}</span>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 block mb-1 flex items-center gap-1">
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-500 block mb-1 flex items-center gap-1">
               <FileEdit size={12} /> Drafts
             </span>
-            <span className="text-2xl font-black text-gray-700">{stats.draft}</span>
+            <span className="text-xl sm:text-2xl font-heading font-bold text-gray-700">{stats.draft}</span>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-red-100/60 shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-red-600 block mb-1 flex items-center gap-1">
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-red-200/80 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-red-600 block mb-1 flex items-center gap-1">
               <XCircle size={12} /> Rejected
             </span>
-            <span className="text-2xl font-black text-red-700">{stats.rejected}</span>
+            <span className="text-xl sm:text-2xl font-heading font-bold text-red-700">{stats.rejected}</span>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-primary/20 shadow-xs">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-primary block mb-1 flex items-center gap-1">
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-primary/20 shadow-2xs">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-primary block mb-1 flex items-center gap-1">
               <MessageSquare size={12} /> Enquiries
             </span>
-            <span className="text-2xl font-black text-primary">{stats.totalEnquiries}</span>
+            <span className="text-xl sm:text-2xl font-heading font-bold text-primary">{stats.totalEnquiries}</span>
           </div>
         </div>
 
         {/* Tab Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 border-b border-gray-100">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 border-b border-gray-200/80 no-scrollbar">
           {[
             { key: 'ALL', label: `All (${stats.total})` },
             { key: 'PUBLISHED', label: `Published (${stats.published})` },
@@ -256,10 +259,10 @@ export default function SellerDashboardPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-3.5 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap ${
+              className={`px-3.5 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap shrink-0 ${
                 activeTab === tab.key
                   ? 'bg-primary text-white shadow-xs'
-                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-100'
+                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80'
               }`}
             >
               {tab.label}
@@ -267,11 +270,11 @@ export default function SellerDashboardPage() {
           ))}
         </div>
 
-        {/* Listings List */}
+        {/* Listings Collection */}
         {loading ? (
           <div className="space-y-4 animate-pulse">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="h-32 bg-white rounded-2xl border border-gray-100" />
+              <div key={n} className="h-36 bg-white rounded-2xl border border-gray-200/80" />
             ))}
           </div>
         ) : filteredListings.length > 0 ? (
@@ -281,32 +284,32 @@ export default function SellerDashboardPage() {
               const priceText = formatPrice(listing.price, listing.priceType, listing.listingPurpose);
 
               let statusBadge = (
-                <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">
+                <span className="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-700">
                   {listing.status}
                 </span>
               );
 
               if (listing.status === 'PUBLISHED') {
                 statusBadge = (
-                  <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-primary/10 text-primary border border-primary/20">
                     Live / Published
                   </span>
                 );
               } else if (listing.status === 'PENDING_REVIEW') {
                 statusBadge = (
-                  <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                  <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-accent/15 text-accent border border-accent/30">
                     Pending Review
                   </span>
                 );
               } else if (listing.status === 'REJECTED') {
                 statusBadge = (
-                  <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-red-50 text-red-700 border border-red-200">
-                    Rejected
+                  <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-red-50 text-red-700 border border-red-200">
+                    Needs Changes
                   </span>
                 );
               } else if (listing.status === 'DRAFT') {
                 statusBadge = (
-                  <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                  <span className="px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
                     Draft
                   </span>
                 );
@@ -315,46 +318,49 @@ export default function SellerDashboardPage() {
               return (
                 <div
                   key={listing.id}
-                  className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs hover:shadow transition-all"
+                  className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/80 shadow-2xs hover:shadow-sm transition-all"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    {/* Left: Thumbnail and info */}
-                    <div className="flex items-start sm:items-center gap-4">
-                      <div className="relative w-24 h-20 sm:w-28 sm:h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                    {/* Thumbnail & Property Details */}
+                    <div className="flex items-start sm:items-center gap-3.5">
+                      <div className="relative w-22 h-20 sm:w-28 sm:h-22 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                         <img src={coverImg} alt={listing.title} className="w-full h-full object-cover" />
                       </div>
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
                           {statusBadge}
                           <span className="text-xs font-semibold text-gray-500 uppercase">
-                            {listing.propertyType} • For {listing.listingPurpose}
+                            {listing.propertyType} • {listing.listingPurpose}
                           </span>
-                          <span className="text-xs font-medium text-gray-400">
-                            in {listing.locality}, {listing.district}
+                          <span className="text-xs font-medium text-gray-400 truncate">
+                            • {listing.locality}, {listing.district}
                           </span>
                         </div>
-                        <h3 className="text-base font-bold text-gray-900 leading-snug">
+
+                        <h3 className="text-sm sm:text-base font-heading font-bold text-gray-900 leading-snug line-clamp-1">
                           {listing.title}
                         </h3>
-                        <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                          <span className="font-bold text-gray-800">{priceText}</span>
+
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 mt-1">
+                          <span className="font-bold text-primary">{priceText}</span>
                           <span>•</span>
                           <span>{listing.bedrooms} BHK</span>
                           <span>•</span>
                           <span>{listing.area} {listing.areaUnit}</span>
                           <span>•</span>
-                          <span>{listing._count?.enquiries || 0} enquiries</span>
+                          <span className="font-medium text-gray-600">{listing._count?.enquiries || 0} enquiries</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Right: Actions */}
-                    <div className="flex flex-wrap items-center gap-2 shrink-0 self-end md:self-center">
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap items-center gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-gray-100 justify-end">
                       {listing.status === 'PUBLISHED' && (
                         <Link
                           href={`/residential/${listing.slug}`}
                           target="_blank"
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-primary bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[34px] text-xs font-semibold text-gray-700 hover:text-primary bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200/60"
                         >
                           <Eye size={13} />
                           <span>View Public</span>
@@ -366,7 +372,7 @@ export default function SellerDashboardPage() {
                         <button
                           onClick={() => handleSubmitForReview(listing.id)}
                           disabled={actionLoading === listing.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-xs transition-all disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-semibold text-white bg-primary hover:bg-primary-btn rounded-lg shadow-2xs transition-all disabled:opacity-50"
                         >
                           <Send size={12} />
                           <span>Submit for Review</span>
@@ -375,7 +381,7 @@ export default function SellerDashboardPage() {
 
                       <Link
                         href={`/seller/listings/${listing.id}/edit`}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 min-h-[34px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                       >
                         <Edit size={12} />
                         <span>Edit</span>
@@ -384,24 +390,22 @@ export default function SellerDashboardPage() {
                       <button
                         onClick={() => handleDeleteListing(listing.id, listing.title)}
                         disabled={actionLoading === listing.id}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 min-h-[34px] min-w-[34px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center"
                         title="Delete listing"
+                        aria-label="Delete listing"
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
                   </div>
 
-                  {/* Rejection Feedback Banner */}
+                  {/* Moderator Rejection Feedback Banner */}
                   {listing.status === 'REJECTED' && listing.rejectionReason && (
-                    <div className="mt-3.5 p-3 rounded-xl bg-red-50/80 border border-red-200 text-xs text-red-800 flex items-start gap-2">
+                    <div className="mt-3.5 p-3 rounded-xl bg-red-50/90 border border-red-200 text-xs text-red-800 flex items-start gap-2">
                       <AlertTriangle size={15} className="shrink-0 mt-0.5 text-red-600" />
                       <div>
                         <span className="font-bold">Moderator Feedback: </span>
                         <span>{listing.rejectionReason}</span>
-                        <p className="mt-1 text-[11px] text-red-600">
-                          Please edit your listing to resolve this feedback and click &ldquo;Submit for Review&rdquo; again.
-                        </p>
                       </div>
                     </div>
                   )}
@@ -410,20 +414,19 @@ export default function SellerDashboardPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 max-w-md mx-auto">
+          /* Empty Listings State */
+          <div className="my-10 py-12 px-4 text-center bg-white rounded-2xl border border-gray-200/80 shadow-2xs max-w-md mx-auto">
             <Building2 size={36} className="mx-auto text-gray-300 mb-3" />
-            <h3 className="text-base font-bold text-gray-900 mb-1">No listings found</h3>
+            <h3 className="text-base font-bold text-gray-800 mb-1">No listings in this category</h3>
             <p className="text-xs text-gray-500 mb-4">
-              {activeTab === 'ALL'
-                ? "You haven't listed any residential properties yet."
-                : `No properties found under "${activeTab}".`}
+              Get started by creating your first residential property listing.
             </p>
             <Link
               href="/seller/listings/new"
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-primary text-white rounded-xl hover:bg-primary/90 shadow-xs transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-primary text-white rounded-xl hover:bg-primary-btn transition-colors"
             >
               <PlusCircle size={14} />
-              <span>Create Your First Listing</span>
+              <span>Create Listing</span>
             </Link>
           </div>
         )}

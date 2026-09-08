@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Home, Building2, Sparkles, ChevronRight, Compass } from 'lucide-react';
+import Image from 'next/image';
+import { Search, Home, Building2, ChevronRight, Compass, Sparkles } from 'lucide-react';
 import ResidentialDistrictSelector from './ResidentialDistrictSelector';
 import ResidentialFilters, { FilterState } from './ResidentialFilters';
 import ResidentialCard from './ResidentialCard';
@@ -125,7 +126,7 @@ export default function ResidentialPage({
     fetchListings();
   }, [fetchListings]);
 
-  // Live synchronization: silently checks for newly published or unpublished listings
+  // Live synchronization
   useLiveDataSync({
     fetcher: async () => {
       const res = await fetch('/api/residential/districts');
@@ -135,7 +136,6 @@ export default function ResidentialPage({
     onData: (data: any) => {
       if (data?.success && Array.isArray(data.districts)) {
         setDistricts(data.districts);
-        // Re-fetch current listing view silently
         fetchListings();
       }
     },
@@ -185,92 +185,109 @@ export default function ResidentialPage({
     Boolean(searchQuery.trim());
 
   return (
-    <div className="min-h-screen bg-[#fafaf9] text-gray-900 pb-20">
-      {/* Top Breadcrumb & Hero Banner */}
-      <section className="relative pt-28 pb-12 bg-white border-b border-gray-100 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
+    <div className="min-h-screen bg-background text-foreground pb-20">
+      {/* ================= HERO HEADER (TRINFRA SIGNATURE IDENTITY) ================= */}
+      <section className="relative w-full min-h-[380px] sm:min-h-[420px] lg:min-h-[460px] flex flex-col justify-end overflow-hidden">
+        {/* Architectural Photography Background */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/hero_landscape.jpeg"
+            alt="TRINFRA Residential Properties"
+            fill
+            priority
+            sizes="100vw"
+            quality={75}
+            className="object-cover object-center"
+          />
+        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs text-gray-400 mb-3 font-medium">
-            <span className="hover:text-gray-600 transition-colors">Home</span>
-            <ChevronRight size={12} />
-            <span className="text-primary font-semibold">Residential Marketplace</span>
+        {/* Deep Forest Green Gradient Overlays */}
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0E2115]/95 via-[#0E2115]/85 to-[#0E2115]/65" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0E2115] via-transparent to-black/25" />
+
+        {/* Hero Content Container */}
+        <div className="relative z-10 max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 w-full pb-10 sm:pb-14 pt-28 sm:pt-36">
+          {/* Breadcrumb Trail */}
+          <nav className="flex items-center gap-2 text-xs text-white/60 mb-4 font-medium" aria-label="Breadcrumb">
+            <span className="hover:text-white transition-colors cursor-pointer" onClick={() => router.push('/')}>
+              Home
+            </span>
+            <ChevronRight size={12} className="text-white/40" />
+            <span className="text-accent font-semibold">Residential Marketplace</span>
             {selectedDistrict !== 'ALL' && (
               <>
-                <ChevronRight size={12} />
-                <span className="text-gray-700 font-semibold">{selectedDistrict}</span>
+                <ChevronRight size={12} className="text-white/40" />
+                <span className="text-white font-semibold">{selectedDistrict}</span>
               </>
             )}
-          </div>
+          </nav>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60 mb-3">
-                <Sparkles size={13} />
-                <span>Verified Kerala Residential Marketplace</span>
-              </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-                {selectedDistrict !== 'ALL'
-                  ? `Residential Properties in ${selectedDistrict}`
-                  : 'Find Your Next Home in Kerala'}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-2xl">
+              {/* Category Kicker */}
+              <p className="text-[11px] font-bold tracking-[0.25em] uppercase text-accent/90 mb-3 flex items-center gap-1.5">
+                <Sparkles size={12} className="text-accent" />
+                <span>Kerala Residential Marketplace</span>
+              </p>
+
+              {/* Two-tone Signature Heading */}
+              <h1 className="text-[32px] sm:text-[44px] lg:text-[52px] font-heading font-bold leading-[1.08] tracking-tight mb-4 text-white">
+                <span>Find a Home </span>
+                <span className="text-accent block sm:inline">That Fits Your Needs.</span>
               </h1>
-              <p className="mt-2 text-sm sm:text-base text-gray-500 max-w-2xl">
-                Browse verified flats, apartments, and luxury homes directly from verified property owners and developers across all 14 Kerala districts.
+
+              {/* Editorial Description */}
+              <p className="text-sm sm:text-base text-white/80 max-w-xl leading-relaxed">
+                Browse verified flats, apartments, and residential homes directly from verified owners and developers across all 14 Kerala districts.
               </p>
             </div>
 
-            {/* Seller CTA button */}
+            {/* Seller Portal Callout Action */}
             <div className="shrink-0">
               <button
                 onClick={() => router.push('/seller')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary/90 shadow-sm hover:shadow transition-all"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-semibold shadow-panel transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Building2 size={16} />
                 <span>Seller Portal / List Property</span>
               </button>
             </div>
           </div>
-
-          {/* 14 Districts Selector */}
-          <div className="mt-8 pt-6 border-t border-gray-100">
-            <ResidentialDistrictSelector
-              districts={districts}
-              selectedDistrict={selectedDistrict}
-              onSelectDistrict={handleSelectDistrict}
-              totalAllCount={totalAllCount}
-            />
-          </div>
         </div>
       </section>
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        {/* CRITICAL BEHAVIOR:
-            1. If selected district has ZERO listings:
-               DO NOT show search bar, filters, or property grid.
-               SHOW clean empty state with action to browse other districts.
-            2. If selected district has PUBLISHED listings:
-               SHOW search bar, filters, property count, cards, and sorting.
-        */}
+      {/* ================= 14 DISTRICTS SELECTOR BAR ================= */}
+      <section className="bg-white border-b border-gray-200/80 sticky top-[72px] z-30 shadow-2xs">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 py-3.5">
+          <ResidentialDistrictSelector
+            districts={districts}
+            selectedDistrict={selectedDistrict}
+            onSelectDistrict={handleSelectDistrict}
+            totalAllCount={totalAllCount}
+          />
+        </div>
+      </section>
+
+      {/* ================= MAIN CONTENT AREA ================= */}
+      <main className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 pt-8">
         {isSelectedDistrictEmpty ? (
-          /* Clean District Empty State */
-          <div className="my-12 py-16 px-6 text-center bg-white rounded-2xl border border-gray-100 shadow-xs max-w-2xl mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4 border border-amber-100">
+          /* ================= EMPTY DISTRICT STATE ================= */
+          <div className="my-10 py-16 px-6 text-center bg-white rounded-2xl border border-gray-200/80 shadow-panel max-w-2xl mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mx-auto mb-5 border border-accent/20">
               <Compass size={32} />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-2">
               No residential properties are currently available in {selectedDistrict}.
             </h2>
-            <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
-              Our verified listings in {selectedDistrict} are being onboarded. You can check active homes in other Kerala districts or list your own property here.
+            <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto mb-6 leading-relaxed">
+              Our verified listings in {selectedDistrict} are actively being vetted and onboarded. You can explore active homes in other Kerala districts or list your property today.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => handleSelectDistrict('ALL')}
-                className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary/90 transition-all shadow-xs"
+                className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary-btn transition-all shadow-xs"
               >
-                Browse other districts
+                Explore other districts
               </button>
               <button
                 onClick={() => router.push('/seller/listings/new')}
@@ -281,34 +298,35 @@ export default function ResidentialPage({
             </div>
           </div>
         ) : (
-          /* Active District Discovery View */
+          /* ================= ACTIVE DISCOVERY VIEW ================= */
           <div>
             {/* Search & Custom Filter Bar */}
-            <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-xs mb-8">
-              <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+            <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 shadow-2xs mb-6">
+              <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
                 {/* Search Bar */}
-                <div className="relative flex-1">
+                <div className="relative flex-1 min-w-0">
                   <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by title, locality, or keyword..."
-                    className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400"
+                    placeholder="Search by locality, title, or keywords..."
+                    className="w-full pl-10 pr-12 py-2.5 text-xs sm:text-sm bg-gray-50/80 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400"
                     aria-label="Search residential properties"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-700 font-medium px-1.5 py-0.5"
+                      aria-label="Clear search"
                     >
                       Clear
                     </button>
                   )}
                 </div>
 
-                {/* Filters */}
-                <div className="flex-shrink-0">
+                {/* Filter Controls (Desktop Bar + Mobile Drawer) */}
+                <div className="shrink-0">
                   <ResidentialFilters
                     filters={filters}
                     onFilterChange={handleFilterChange}
@@ -319,36 +337,36 @@ export default function ResidentialPage({
               </div>
             </div>
 
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
+            {/* Results Count Header */}
+            <div className="flex items-center justify-between mb-5">
               <div className="text-xs sm:text-sm text-gray-500 font-medium">
                 Showing <span className="font-bold text-gray-900">{totalCount}</span> verified{' '}
                 {totalCount === 1 ? 'property' : 'properties'}
                 {selectedDistrict !== 'ALL' && (
                   <span>
                     {' '}
-                    in <span className="font-semibold text-primary">{selectedDistrict}</span>
+                    in <span className="font-bold text-primary">{selectedDistrict}</span>
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Loading / Results Grid */}
+            {/* Properties Grid */}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 animate-pulse">
                 {[1, 2, 3, 4, 5, 6].map((n) => (
                   <div key={n} className="bg-white rounded-2xl h-80 border border-gray-100" />
                 ))}
               </div>
             ) : listings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                 {listings.map((listing, idx) => (
                   <ResidentialCard key={listing.id} listing={listing} priority={idx < 3} />
                 ))}
               </div>
             ) : (
-              /* No search results matching filter query */
-              <div className="my-12 py-12 px-4 text-center bg-white rounded-2xl border border-gray-100 max-w-md mx-auto">
+              /* No Search Results */
+              <div className="my-10 py-12 px-4 text-center bg-white rounded-2xl border border-gray-200/80 max-w-md mx-auto">
                 <Home size={36} className="mx-auto text-gray-300 mb-3" />
                 <h3 className="text-base font-bold text-gray-800 mb-1">No matching properties found</h3>
                 <p className="text-xs text-gray-500 mb-4">
@@ -356,7 +374,7 @@ export default function ResidentialPage({
                 </p>
                 <button
                   onClick={handleResetFilters}
-                  className="px-4 py-2 text-xs font-semibold bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                  className="px-4 py-2 text-xs font-semibold bg-primary text-white rounded-xl hover:bg-primary-btn transition-colors"
                 >
                   Reset All Filters
                 </button>
@@ -365,11 +383,11 @@ export default function ResidentialPage({
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-12 pt-6 border-t border-gray-100">
+              <div className="flex items-center justify-center gap-2 mt-12 pt-6 border-t border-gray-200/80">
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 min-h-[38px] text-xs font-semibold rounded-xl border border-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
                   Previous
                 </button>
@@ -379,7 +397,7 @@ export default function ResidentialPage({
                 <button
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 min-h-[38px] text-xs font-semibold rounded-xl border border-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
                   Next
                 </button>

@@ -278,12 +278,31 @@ export default function EditListingPage() {
 
         <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm">
           <div className="mb-6 pb-6 border-b border-gray-100">
-            <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-heading font-bold text-gray-900 tracking-tight">
               Edit Residential Listing
             </h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Update property specifications, photos, and price. Submitting changes sends this listing for admin review.
             </p>
+          </div>
+
+          {/* Visual Step Indicator */}
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-8 pb-6 border-b border-gray-100 text-center">
+            {[
+              { num: '1', title: 'Basic Info' },
+              { num: '2', title: 'Location' },
+              { num: '3', title: 'Specs' },
+              { num: '4', title: 'Amenities' },
+              { num: '5', title: 'Pricing' },
+              { num: '6', title: 'Photos' },
+            ].map((s) => (
+              <div key={s.num} className="p-2 rounded-xl bg-gray-50/80 border border-gray-100">
+                <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold inline-flex items-center justify-center mb-0.5">
+                  {s.num}
+                </span>
+                <span className="block text-[11px] font-medium text-gray-700 truncate">{s.title}</span>
+              </div>
+            ))}
           </div>
 
           {formError && (
@@ -539,28 +558,32 @@ export default function EditListingPage() {
                     >
                       <img src={img.url} alt="Uploaded" className="w-full h-full object-cover" />
                       {img.isCover && (
-                        <div className="absolute top-1.5 left-1.5 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-                          Cover
+                        <div className="absolute top-1.5 left-1.5 z-10 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+                          Cover Photo
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        {!img.isCover && (
-                          <button
-                            type="button"
-                            onClick={() => setCoverImage(idx)}
-                            className="text-[10px] font-bold px-2 py-1 rounded bg-white text-gray-800"
-                          >
-                            Set Cover
-                          </button>
-                        )}
+
+                      {/* Remove Button (Directly clickable on touch/mobile) */}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        className="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-full bg-black/60 hover:bg-red-600 text-white flex items-center justify-center transition-colors shadow-xs"
+                        title="Remove photo"
+                        aria-label="Remove photo"
+                      >
+                        <X size={12} />
+                      </button>
+
+                      {/* Set as Cover Button */}
+                      {!img.isCover && (
                         <button
                           type="button"
-                          onClick={() => removeImage(idx)}
-                          className="p-1.5 rounded-full bg-red-600 text-white"
+                          onClick={() => setCoverImage(idx)}
+                          className="absolute bottom-1.5 left-1.5 z-10 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/95 text-gray-800 shadow-xs hover:bg-white"
                         >
-                          <X size={12} />
+                          Set Cover
                         </button>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -573,7 +596,7 @@ export default function EditListingPage() {
                 type="button"
                 disabled={submitting}
                 onClick={() => handleSave(false)}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-xs sm:text-sm font-semibold hover:bg-gray-50 transition-colors"
+                className="w-full sm:w-auto px-5 py-2.5 min-h-[42px] rounded-xl border border-gray-200 text-gray-700 text-xs sm:text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 Save Changes
               </button>
@@ -581,7 +604,7 @@ export default function EditListingPage() {
                 type="button"
                 disabled={submitting}
                 onClick={() => handleSave(true)}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary/90 shadow-sm transition-all"
+                className="w-full sm:w-auto px-6 py-2.5 min-h-[42px] rounded-xl bg-primary text-white text-xs sm:text-sm font-semibold hover:bg-primary-btn shadow-xs transition-all disabled:opacity-50 flex items-center justify-center"
               >
                 {submitting ? 'Saving...' : 'Save & Submit for Review'}
               </button>

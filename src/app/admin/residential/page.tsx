@@ -364,8 +364,140 @@ export default function AdminResidentialPage() {
                 Loading residential listings...
               </div>
             ) : listings.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              <>
+                {/* Mobile Card List (< lg) */}
+                <div className="block lg:hidden divide-y divide-gray-100">
+                  {listings.map((item) => {
+                    const coverImg = item.images?.[0]?.url || '/images/houses_tropical.jpeg';
+                    const priceStr = formatPrice(item.price, item.priceType, item.listingPurpose);
+
+                    let badge = (
+                      <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-gray-100 text-gray-700">
+                        {item.status}
+                      </span>
+                    );
+
+                    if (item.status === 'PUBLISHED') {
+                      badge = (
+                        <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-primary/10 text-primary border border-primary/20">
+                          PUBLISHED
+                        </span>
+                      );
+                    } else if (item.status === 'PENDING_REVIEW') {
+                      badge = (
+                        <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-accent/15 text-accent border border-accent/30">
+                          PENDING REVIEW
+                        </span>
+                      );
+                    } else if (item.status === 'REJECTED') {
+                      badge = (
+                        <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-red-100 text-red-800 border border-red-200">
+                          REJECTED
+                        </span>
+                      );
+                    } else if (item.status === 'UNPUBLISHED') {
+                      badge = (
+                        <span className="px-2.5 py-0.5 rounded-full font-bold text-[10px] bg-gray-200 text-gray-700">
+                          UNPUBLISHED
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <div key={item.id} className="p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="relative w-16 h-14 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                            <img src={coverImg} alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <span className="text-[10px] uppercase font-bold text-gray-400 truncate">
+                                {item.district} • {item.propertyType}
+                              </span>
+                              {badge}
+                            </div>
+                            <h4 className="font-bold text-sm text-gray-900 leading-snug line-clamp-1">
+                              {item.title}
+                            </h4>
+                            <div className="text-xs font-bold text-primary mt-0.5">
+                              {priceStr}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-gray-500 bg-gray-50/90 p-2.5 rounded-xl flex items-center justify-between">
+                          <div>
+                            <span>{item.bedrooms} BHK</span> • <span>{item.area} {item.areaUnit}</span>
+                          </div>
+                          <div className="text-[11px] text-gray-600 font-medium truncate max-w-[50%]">
+                            By {item.seller?.fullName}
+                          </div>
+                        </div>
+
+                        {item.status === 'REJECTED' && item.rejectionReason && (
+                          <div className="text-[11px] text-red-700 bg-red-50 p-2 rounded-lg border border-red-200">
+                            <span className="font-bold">Feedback: </span>{item.rejectionReason}
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          {item.status !== 'PUBLISHED' && (
+                            <button
+                              disabled={actionLoading === item.id}
+                              onClick={() => handleApprove(item.id)}
+                              className="flex-1 py-2 min-h-[38px] rounded-xl text-xs font-bold bg-primary hover:bg-primary-btn text-white shadow-2xs transition-colors flex items-center justify-center gap-1"
+                            >
+                              <CheckCircle size={13} />
+                              <span>Approve</span>
+                            </button>
+                          )}
+                          {item.status === 'PENDING_REVIEW' && (
+                            <button
+                              disabled={actionLoading === item.id}
+                              onClick={() => handleOpenRejectModal(item)}
+                              className="flex-1 py-2 min-h-[38px] rounded-xl text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-colors flex items-center justify-center gap-1"
+                            >
+                              <XCircle size={13} />
+                              <span>Reject</span>
+                            </button>
+                          )}
+                          {item.status === 'PUBLISHED' && (
+                            <>
+                              <Link
+                                href={`/residential/${item.slug}`}
+                                target="_blank"
+                                className="px-3 py-2 min-h-[38px] text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center gap-1"
+                              >
+                                <ExternalLink size={13} />
+                                <span>View</span>
+                              </Link>
+                              <button
+                                disabled={actionLoading === item.id}
+                                onClick={() => handleUnpublish(item.id)}
+                                className="flex-1 py-2 min-h-[38px] text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors"
+                              >
+                                Unpublish
+                              </button>
+                            </>
+                          )}
+                          <button
+                            disabled={actionLoading === item.id}
+                            onClick={() => handleDelete(item.id, item.title)}
+                            className="p-2 min-h-[38px] min-w-[38px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center ml-auto"
+                            title="Delete listing"
+                            aria-label="Delete listing"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Table (>= lg) */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-left text-xs">
                   <thead className="bg-gray-50/80 border-b border-gray-200/80 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                     <tr>
                       <th className="py-3.5 px-4">Property</th>
@@ -534,6 +666,7 @@ export default function AdminResidentialPage() {
                   </tbody>
                 </table>
               </div>
+            </>
             ) : (
               <div className="p-12 text-center text-xs text-gray-500">
                 No residential listings match the current filters.
@@ -549,8 +682,48 @@ export default function AdminResidentialPage() {
               Loading buyer enquiries...
             </div>
           ) : enquiries.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <>
+              {/* Mobile Enquiries Cards (< lg) */}
+              <div className="block lg:hidden divide-y divide-gray-100">
+                {enquiries.map((enq) => {
+                  const dateStr = new Date(enq.createdAt).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  });
+                  return (
+                    <div key={enq.id} className="p-4 space-y-2.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-gray-400 font-medium">{dateStr}</span>
+                        <select
+                          value={enq.status}
+                          onChange={(e) => handleEnquiryStatusChange(enq.id, e.target.value)}
+                          className="text-xs font-semibold px-2 py-1 rounded-lg border border-gray-200 bg-gray-50 focus:bg-white"
+                        >
+                          <option value="NEW">NEW</option>
+                          <option value="CONTACTED">CONTACTED</option>
+                          <option value="IN_PROGRESS">IN_PROGRESS</option>
+                          <option value="CLOSED">CLOSED</option>
+                        </select>
+                      </div>
+                      <div>
+                        <span className="font-bold text-gray-900 text-sm">{enq.name}</span>
+                        <div className="text-gray-500">{enq.phone} • {enq.email}</div>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-gray-50 text-gray-700 text-xs italic border border-gray-100">
+                        &ldquo;{enq.message}&rdquo;
+                      </div>
+                      <div className="text-[11px] text-gray-500 pt-1">
+                        Property: <span className="font-semibold text-gray-800">{enq.listing.title}</span> ({enq.listing.district})
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Enquiries Table (>= lg) */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-left text-xs">
                 <thead className="bg-gray-50/80 border-b border-gray-200/80 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                   <tr>
                     <th className="py-3.5 px-4">Date</th>
@@ -614,7 +787,8 @@ export default function AdminResidentialPage() {
                 </tbody>
               </table>
             </div>
-          ) : (
+          </>
+        ) : (
             <div className="p-12 text-center text-xs text-gray-500">
               No residential buyer enquiries received yet.
             </div>
