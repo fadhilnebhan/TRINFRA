@@ -257,7 +257,7 @@ export default function ResidentialPage({
       </section>
 
       {/* ================= 14 DISTRICTS SELECTOR BAR ================= */}
-      <section className="bg-white border-b border-gray-200/80 sticky top-[72px] z-30 shadow-2xs">
+      <section className="bg-white border-b border-gray-200/80">
         <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 py-3.5">
           <ResidentialDistrictSelector
             districts={districts}

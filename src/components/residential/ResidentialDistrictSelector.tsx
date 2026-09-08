@@ -37,16 +37,16 @@ export default function ResidentialDistrictSelector({
         {/* All Kerala Quick Badge */}
         <button
           onClick={() => onSelectDistrict('ALL')}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 ${
+          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shrink-0 ${
             isAllSelected
-              ? 'bg-primary text-white shadow-xs ring-2 ring-accent/40'
-              : 'bg-gray-100/90 text-gray-600 hover:bg-gray-200/80 hover:text-gray-900'
+              ? 'bg-primary text-white shadow-[0_4px_14px_rgba(14,33,21,0.18)] border border-primary/30'
+              : 'bg-gray-100/90 text-gray-600 hover:bg-gray-200/80 hover:text-gray-900 border border-transparent'
           }`}
           aria-pressed={isAllSelected}
         >
           <span>All Kerala</span>
           <span
-            className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+            className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
               isAllSelected ? 'bg-accent text-white' : 'bg-white text-gray-500 shadow-2xs'
             }`}
           >
