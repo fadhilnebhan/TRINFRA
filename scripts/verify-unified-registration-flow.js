@@ -125,7 +125,7 @@ async function runTest() {
 
     // Click List Your Property: if unauthenticated, redirects to seller login with redirect param
     await resListCta.click();
-    await page.waitForTimeout(1000);
+    await page.waitForURL(url => url.pathname.includes('/seller/'), { timeout: 10000 }).catch(() => {});
     const redirectedUrl = page.url();
     assert(
       redirectedUrl.includes('/seller/login') || redirectedUrl.includes('/seller/listings/new'),
