@@ -13,6 +13,7 @@ import {
   ExternalLink,
   X,
   RotateCcw,
+  Eye,
 } from 'lucide-react';
 import CustomSelect from '@/components/opportunities/CustomSelect';
 import { formatPrice } from '@/components/residential/ResidentialCard';
@@ -416,9 +417,11 @@ export default function AdminResidentialPage() {
                               </span>
                               {badge}
                             </div>
-                            <h4 className="font-bold text-sm text-gray-900 leading-snug line-clamp-1">
-                              {item.title}
-                            </h4>
+                            <Link href={`/admin/residential/${item.id}`} className="hover:text-primary transition-colors block">
+                              <h4 className="font-bold text-sm text-gray-900 hover:text-primary leading-snug line-clamp-1">
+                                {item.title}
+                              </h4>
+                            </Link>
                             <div className="text-xs font-bold text-primary mt-0.5">
                               {priceStr}
                             </div>
@@ -440,7 +443,20 @@ export default function AdminResidentialPage() {
                           </div>
                         )}
 
-                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <div className="pt-1 space-y-2">
+                          <Link
+                            href={`/admin/residential/${item.id}`}
+                            className={`w-full py-2 min-h-[38px] rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
+                              item.status === 'PENDING_REVIEW'
+                                ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                            }`}
+                          >
+                            <Eye size={14} />
+                            <span>{item.status === 'PENDING_REVIEW' ? 'Review Listing' : 'View Details'}</span>
+                          </Link>
+
+                          <div className="flex flex-wrap items-center gap-2">
                           {item.status !== 'PUBLISHED' && (
                             <button
                               disabled={actionLoading === item.id}
@@ -489,6 +505,7 @@ export default function AdminResidentialPage() {
                           >
                             <Trash2 size={15} />
                           </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -555,7 +572,13 @@ export default function AdminResidentialPage() {
                                 <img src={coverImg} alt="" className="w-full h-full object-cover" />
                               </div>
                               <div className="max-w-xs">
-                                <span className="font-bold text-gray-900 line-clamp-1">{item.title}</span>
+                                <Link
+                                  href={`/admin/residential/${item.id}`}
+                                  className="font-bold text-gray-900 hover:text-primary transition-colors line-clamp-1 block"
+                                  title={item.title}
+                                >
+                                  {item.title}
+                                </Link>
                                 <span className="text-[11px] text-gray-400">
                                   {item.bedrooms} BHK • {item.area} {item.areaUnit}
                                 </span>
@@ -603,6 +626,20 @@ export default function AdminResidentialPage() {
                           {/* Actions */}
                           <td className="py-3.5 px-4 text-right">
                             <div className="inline-flex items-center gap-1.5">
+                              {/* Dedicated Review / Details button */}
+                              <Link
+                                href={`/admin/residential/${item.id}`}
+                                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 shrink-0 ${
+                                  item.status === 'PENDING_REVIEW'
+                                    ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-xs'
+                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200'
+                                }`}
+                                title={item.status === 'PENDING_REVIEW' ? 'Review submitted listing' : 'View full details'}
+                              >
+                                <Eye size={13} />
+                                <span>{item.status === 'PENDING_REVIEW' ? 'Review' : 'Details'}</span>
+                              </Link>
+
                               {/* Approve Button */}
                               {item.status !== 'PUBLISHED' && (
                                 <button

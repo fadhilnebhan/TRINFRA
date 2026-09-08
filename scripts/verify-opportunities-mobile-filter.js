@@ -84,11 +84,11 @@ async function verify() {
     if (vp.isMobile) {
       assert(
         filterInfo.position === 'static' || filterInfo.position === 'relative',
-        `Mobile (${vp.width}px): Filter position is NOT sticky and NOT fixed (actual: ${filterInfo.position})`
+        `Mobile (${vp.width}px): Filter position is static (actual: ${filterInfo.position})`
       );
       assert(
         filterInfo.position !== 'sticky' && filterInfo.position !== 'fixed',
-        `Mobile (${vp.width}px): Filter is definitely not sticky/fixed`
+        `Mobile (${vp.width}px): Filter is strictly not sticky or fixed`
       );
     } else {
       assert(
@@ -101,7 +101,7 @@ async function verify() {
       );
     }
 
-    // 2. Perform real scrolling test
+    // 2. Perform scroll down 300px
     await page.evaluate(() => window.scrollTo(0, 300));
     await page.waitForTimeout(200);
 
@@ -113,69 +113,84 @@ async function verify() {
       return {
         scrollY: window.scrollY,
         filterY: rect.y,
-        filterBottom: rect.bottom,
         position: cs.position
       };
     });
 
     console.log(`  Scrolled 300px: window.scrollY=${scroll300.scrollY}, filter rect.y=${scroll300.filterY.toFixed(1)}px`);
+    if (vp.isMobile) {
+      // In normal document flow, filter moves up exactly by 300px
+      const delta = Math.abs((filterInfo.rectY - 300) - scroll300.filterY);
+      assert(
+        delta < 2,
+        `Mobile (${vp.width}px): Filter moves naturally in document flow (y=${scroll300.filterY.toFixed(1)}px, delta=${delta.toFixed(1)}px)`
+      );
+    }
 
-    // Scroll 700px down (past hero and filter)
-    await page.evaluate(() => window.scrollTo(0, 700));
-    await page.waitForTimeout(200);
+    // 3. Scroll until first opportunity card is clearly visible
+    const scrollCardResult = await page.evaluate(() => {
+      // Find first card
+      const firstCard = document.querySelector('a[href^="/opportunities/"]');
+      if (!firstCard) return { error: 'No opportunity card found' };
 
-    const scroll700 = await page.evaluate(() => {
+      // Scroll so first card top is comfortably in viewport (e.g., at y = 150px)
+      const initialCardRect = firstCard.getBoundingClientRect();
+      const targetScroll = window.scrollY + initialCardRect.top - 150;
+      window.scrollTo(0, targetScroll);
+
+      return { targetScroll };
+    });
+
+    await page.waitForTimeout(300);
+
+    const cardState = await page.evaluate(() => {
       const searchBtn = document.getElementById('search-btn');
       const filterSection = searchBtn.closest('section');
-      const rect = filterSection.getBoundingClientRect();
-      const cs = window.getComputedStyle(filterSection);
+      const filterRect = filterSection.getBoundingClientRect();
+      const filterCs = window.getComputedStyle(filterSection);
 
-      // Find first opportunity card
-      const cards = Array.from(document.querySelectorAll('a[href^="/opportunities/"]'));
-      const cardRects = cards.slice(0, 3).map(c => {
-        const r = c.getBoundingClientRect();
-        return { top: r.top, bottom: r.bottom, visible: r.bottom > 72 && r.top < window.innerHeight };
-      });
+      const firstCard = document.querySelector('a[href^="/opportunities/"]');
+      const cardRect = firstCard ? firstCard.getBoundingClientRect() : null;
 
-      let overlapsCard = false;
-      if (rect.bottom > 72 && rect.top < window.innerHeight) {
-        for (const cr of cardRects) {
-          if (cr.visible && !(rect.bottom <= cr.top || rect.top >= cr.bottom)) {
-            overlapsCard = true;
-          }
+      // Check if filter section obscures the card
+      let obscuresCard = false;
+      if (cardRect && filterRect.bottom > 72 && filterRect.top < window.innerHeight) {
+        // Filter is somewhere in the viewport
+        if (!(filterRect.bottom <= cardRect.top || filterRect.top >= cardRect.bottom)) {
+          obscuresCard = true;
         }
       }
 
       return {
         scrollY: window.scrollY,
-        filterY: rect.y,
-        filterBottom: rect.bottom,
-        filterInViewport: rect.bottom > 72 && rect.top < window.innerHeight,
-        overlapsCard,
-        firstCardTop: cardRects[0] ? cardRects[0].top : null,
-        position: cs.position
+        filterTop: filterRect.top,
+        filterBottom: filterRect.bottom,
+        cardTop: cardRect ? cardRect.top : null,
+        cardBottom: cardRect ? cardRect.bottom : null,
+        obscuresCard,
+        filterPosition: filterCs.position
       };
     });
 
-    console.log(`  Scrolled 700px: window.scrollY=${scroll700.scrollY}, filter rect.bottom=${scroll700.filterBottom.toFixed(1)}px, filterInViewport=${scroll700.filterInViewport}`);
+    console.log(`  Scrolled to Card: scrollY=${cardState.scrollY.toFixed(1)}px, filterBottom=${cardState.filterBottom.toFixed(1)}px, cardTop=${cardState.cardTop ? cardState.cardTop.toFixed(1) : 'null'}px`);
 
     if (vp.isMobile) {
       assert(
-        scroll700.filterBottom <= 100,
-        `Mobile (${vp.width}px): Filter scrolled away naturally (rect.bottom=${scroll700.filterBottom.toFixed(1)}px <= 100px)`
+        cardState.filterBottom <= 72,
+        `Mobile (${vp.width}px): Filter section has completely left the viewport (filterBottom: ${cardState.filterBottom.toFixed(1)}px <= 72px)`
       );
       assert(
-        !scroll700.overlapsCard,
-        `Mobile (${vp.width}px): Filter does NOT overlap any opportunity card`
+        !cardState.obscuresCard,
+        `Mobile (${vp.width}px): Opportunity card is 100% unobscured by filter section`
       );
     } else {
       assert(
-        scroll700.position === 'sticky',
-        `Desktop (${vp.width}px): Filter is sticky as intended at top 72px`
+        cardState.filterPosition === 'sticky',
+        `Desktop (${vp.width}px): Filter position is sticky at top 72px as designed`
       );
     }
 
-    // 3. Scroll back to top and test filter interactivity
+    // 4. Test interactivity when scrolling back to top
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(200);
 
@@ -197,18 +212,24 @@ async function verify() {
     await districtBtn.click();
     await page.waitForTimeout(100);
 
-    // 4. Check horizontal overflow
+    // 5. Check horizontal overflow
     const overflowX = await page.evaluate(() => {
       return document.documentElement.scrollWidth - window.innerWidth;
     });
     assert(
       overflowX <= 1,
-      `Viewport (${vp.width}px): 0px horizontal overflow (scrollWidth - innerWidth = ${overflowX}px)`
+      `Viewport (${vp.width}px): 0px horizontal overflow (actual: ${overflowX}px)`
     );
 
-    // 5. Capture screenshot for 390px (mobile) and 1440px (desktop) when scrolled to 700px
+    // 6. Capture screenshot for 390px (mobile) and 1440px (desktop) when scrolled to card
     if (vp.width === 390 || vp.width === 1440) {
-      await page.evaluate(() => window.scrollTo(0, 700));
+      await page.evaluate(() => {
+        const firstCard = document.querySelector('a[href^="/opportunities/"]');
+        if (firstCard) {
+          const rect = firstCard.getBoundingClientRect();
+          window.scrollTo(0, window.scrollY + rect.top - 120);
+        }
+      });
       await page.waitForTimeout(300);
       const screenshotName = vp.isMobile ? 'opportunities_mobile_scrolled_fixed.png' : 'opportunities_desktop_scrolled_fixed.png';
       await page.screenshot({
@@ -220,7 +241,7 @@ async function verify() {
     }
   }
 
-  assert(consoleErrors.length === 0, `No console errors encountered (actual: ${consoleErrors.length})`);
+  assert(consoleErrors.length === 0, `No console errors encountered across all tests`);
 
   console.log(`\n==================================================`);
   console.log(`FINAL RESULT: ${passedTests}/${totalTests} PASSED, ${failedTests} FAILED`);

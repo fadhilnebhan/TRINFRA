@@ -24,6 +24,12 @@ export async function GET(
             email: true,
             phone: true,
             companyName: true,
+            createdAt: true,
+            _count: {
+              select: {
+                listings: true,
+              },
+            },
           },
         },
         images: {
