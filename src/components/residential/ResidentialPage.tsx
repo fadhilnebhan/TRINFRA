@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useTransition, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Search, Home, Building2, ChevronRight, Compass, Sparkles } from 'lucide-react';
@@ -215,9 +216,9 @@ export default function ResidentialPage({
         <div className="relative z-10 max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16 w-full pb-10 sm:pb-14 pt-28 sm:pt-36">
           {/* Breadcrumb Trail */}
           <nav className="flex items-center gap-2 text-xs text-white/60 mb-4 font-medium" aria-label="Breadcrumb">
-            <span className="hover:text-white transition-colors cursor-pointer" onClick={() => router.push('/')}>
+            <Link href="/" className="hover:text-white transition-colors">
               Home
-            </span>
+            </Link>
             <ChevronRight size={12} className="text-white/40" />
             <span className="text-accent font-semibold">Residential Marketplace</span>
             {selectedDistrict !== 'ALL' && (

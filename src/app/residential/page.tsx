@@ -26,6 +26,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 }
 
 import { Suspense } from 'react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export default async function Page({ searchParams }: PageProps) {
   const initialDistrict = searchParams.district || 'ALL';
@@ -40,13 +42,19 @@ export default async function Page({ searchParams }: PageProps) {
   ]);
 
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#fafaf9] pt-32 text-center text-xs text-gray-400">Loading marketplace...</div>}>
-      <ResidentialPage
-        initialDistricts={districts}
-        initialListings={initialResult.listings}
-        initialTotal={initialResult.total}
-        initialDistrict={initialDistrict}
-      />
-    </Suspense>
+    <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">
+      <Navbar />
+      <main className="flex-grow">
+        <Suspense fallback={<div className="min-h-screen bg-[#fafaf9] pt-32 text-center text-xs text-gray-400">Loading marketplace...</div>}>
+          <ResidentialPage
+            initialDistricts={districts}
+            initialListings={initialResult.listings}
+            initialTotal={initialResult.total}
+            initialDistrict={initialDistrict}
+          />
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
   );
 }

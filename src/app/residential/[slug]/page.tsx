@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getPublicResidentialListingBySlugOrId } from '@/lib/server/residential';
 import ResidentialDetail from '@/components/residential/ResidentialDetail';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -38,5 +40,13 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  return <ResidentialDetail listing={listing} />;
+  return (
+    <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">
+      <Navbar />
+      <main className="flex-grow">
+        <ResidentialDetail listing={listing} />
+      </main>
+      <Footer />
+    </div>
+  );
 }

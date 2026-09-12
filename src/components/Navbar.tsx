@@ -12,12 +12,6 @@ export default function Navbar() {
   const [isChoiceModalOpen, setIsChoiceModalOpen] = useState(false);
   const pathname = usePathname();
 
-  const isLandContext =
-    pathname?.startsWith('/opportunities') ||
-    pathname === '/register' ||
-    pathname === '/register-your-land';
-  const isResidentialContext = pathname?.startsWith('/residential');
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -64,6 +58,7 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
+    { name: 'Home', href: '/' },
     { name: 'How It Works', href: '/how-it-works' },
     { name: 'Landowners', href: '/#landowners' },
     { name: 'Opportunities', href: '/opportunities' },
@@ -75,6 +70,7 @@ export default function Navbar() {
   ];
 
   const mobileNavLinks = [
+    { name: 'Home', href: '/' },
     { name: 'How It Works', href: '/how-it-works' },
     { name: 'Landowners', href: '/register-your-land' },
     { name: 'Opportunities', href: '/opportunities' },
@@ -87,19 +83,21 @@ export default function Navbar() {
 
   return (
     <nav
+      aria-label="Main navigation"
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         isScrolled || isMobileMenuOpen
           ? 'bg-primary-dark/95 backdrop-blur-md py-4 shadow-lg'
           : 'bg-gradient-to-b from-black/60 to-transparent py-6'
       }`}
     >
-      <div className="max-w-[1360px] mx-auto px-6 md:px-12 lg:px-16">
+      <div className="max-w-[1360px] mx-auto px-6 md:px-10 lg:px-12 xl:px-8 2xl:px-12">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <Link
               href="/"
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center gap-2"
+              aria-label="TRINFRA Home"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 20H22L12 2Z" fill="url(#paint0_linear)" />
@@ -115,10 +113,11 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Navigation Links (unchanged) */}
-          <div className="hidden xl:flex items-center space-x-7">
+          {/* Desktop Navigation Links */}
+          <div className="hidden xl:flex items-center space-x-3.5 2xl:space-x-6">
             {navLinks.map((link) => {
               const isActive =
+                (link.name === 'Home' && pathname === '/') ||
                 (link.name === 'Projects' && pathname?.startsWith('/projects')) ||
                 (link.name === 'How It Works' && pathname === '/how-it-works') ||
                 (link.name === 'About' && pathname === '/about') ||
@@ -131,7 +130,8 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   prefetch={!link.href.startsWith('/#')}
-                  className={`transition-colors text-[13px] tracking-wide relative py-1 ${
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`transition-colors text-[12.5px] 2xl:text-[13px] tracking-normal 2xl:tracking-wide relative py-1 whitespace-nowrap ${
                     isActive
                       ? 'text-accent font-bold after:content-[""] after:absolute after:-bottom-1.5 after:left-0 after:right-0 after:h-[2px] after:bg-accent'
                       : 'text-white hover:text-accent font-medium'
@@ -143,34 +143,16 @@ export default function Navbar() {
             })}
           </div>
 
-          {/* Desktop Contextual / Unified CTA Button */}
+          {/* Desktop Unified CTA Button */}
           <div className="hidden xl:flex items-center">
-            {isLandContext ? (
-              <Link
-                href="/register"
-                id="navbar-land-cta"
-                className="bg-primary-btn border border-white/10 text-white px-6 py-2.5 rounded text-[13px] font-bold hover:bg-primary-light transition-colors"
-              >
-                Register Your Land
-              </Link>
-            ) : isResidentialContext ? (
-              <Link
-                href="/seller/listings/new"
-                id="navbar-residential-cta"
-                className="bg-accent border border-white/10 text-white px-6 py-2.5 rounded text-[13px] font-bold hover:bg-accent-hover transition-colors shadow-sm"
-              >
-                List Your Property
-              </Link>
-            ) : (
-              <button
-                type="button"
-                id="navbar-register-list-cta"
-                onClick={() => setIsChoiceModalOpen(true)}
-                className="bg-primary-btn border border-white/10 text-white px-6 py-2.5 rounded text-[13px] font-bold hover:bg-primary-light transition-colors cursor-pointer"
-              >
-                Register / List Property
-              </button>
-            )}
+            <button
+              type="button"
+              id="navbar-register-list-cta"
+              onClick={() => setIsChoiceModalOpen(true)}
+              className="bg-primary-btn border border-white/10 text-white px-4 2xl:px-6 py-2.5 rounded text-[12.5px] 2xl:text-[13px] font-bold hover:bg-primary-light transition-colors cursor-pointer whitespace-nowrap shadow-sm"
+            >
+              Register / List Property
+            </button>
           </div>
 
           {/* Mobile Hamburger / Close Button */}
@@ -194,15 +176,16 @@ export default function Navbar() {
         {/* Mobile Navigation Dropdown Menu */}
         <div
           id="mobile-nav-menu"
-          className={`xl:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+          className={`xl:hidden transition-all duration-300 ease-in-out ${
             isMobileMenuOpen
-              ? 'max-h-[500px] opacity-100 pt-5 pb-6 border-t border-white/10 mt-4'
-              : 'max-h-0 opacity-0 py-0 pointer-events-none'
+              ? 'max-h-[85vh] opacity-100 pt-5 pb-6 border-t border-white/10 mt-4 overflow-y-auto'
+              : 'max-h-0 opacity-0 py-0 overflow-hidden pointer-events-none'
           }`}
         >
           <div className="flex flex-col space-y-1">
             {mobileNavLinks.map((link) => {
               const isActive =
+                (link.name === 'Home' && pathname === '/') ||
                 (link.name === 'Projects' && pathname?.startsWith('/projects')) ||
                 (link.name === 'How It Works' && pathname === '/how-it-works') ||
                 (link.name === 'About' && pathname === '/about') ||
@@ -218,6 +201,7 @@ export default function Navbar() {
                   href={link.href}
                   prefetch={!link.href.startsWith('/#')}
                   onClick={() => setIsMobileMenuOpen(false)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`text-[15px] py-2.5 px-3 rounded-md transition-all flex items-center justify-between ${
                     isActive
                       ? 'text-accent font-bold bg-white/5 border-l-2 border-accent'
@@ -231,37 +215,17 @@ export default function Navbar() {
             })}
 
             <div className="pt-4 mt-2 border-t border-white/10">
-              {isLandContext ? (
-                <Link
-                  href="/register"
-                  id="mobile-nav-land-cta"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-center bg-primary-btn border border-white/15 text-white px-6 py-3 rounded-md text-[14px] font-bold hover:bg-primary-light transition-all shadow-md active:scale-[0.99]"
-                >
-                  Register Your Land
-                </Link>
-              ) : isResidentialContext ? (
-                <Link
-                  href="/seller/listings/new"
-                  id="mobile-nav-residential-cta"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-center bg-accent border border-white/15 text-white px-6 py-3 rounded-md text-[14px] font-bold hover:bg-accent-hover transition-all shadow-md active:scale-[0.99]"
-                >
-                  List Your Property
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  id="mobile-nav-register-list-cta"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    setIsChoiceModalOpen(true);
-                  }}
-                  className="w-full block text-center bg-primary-btn border border-white/15 text-white px-6 py-3 rounded-md text-[14px] font-bold hover:bg-primary-light transition-all shadow-md active:scale-[0.99] cursor-pointer"
-                >
-                  Register / List Property
-                </button>
-              )}
+              <button
+                type="button"
+                id="mobile-nav-register-list-cta"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsChoiceModalOpen(true);
+                }}
+                className="w-full block text-center bg-primary-btn border border-white/15 text-white px-6 py-3 rounded-md text-[14px] font-bold hover:bg-primary-light transition-all shadow-md active:scale-[0.99] cursor-pointer"
+              >
+                Register / List Property
+              </button>
             </div>
           </div>
         </div>
