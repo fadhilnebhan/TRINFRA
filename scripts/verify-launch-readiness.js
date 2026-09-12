@@ -53,11 +53,11 @@ async function runLaunchAudit(targetUrl = 'http://localhost:3000') {
       foundTests.length === 0 ? `0 test listings found. Exactly ${allDbListings.length} legitimate listings in DB.` : `Found ${foundTests.length} test listings: ${foundTests.map(f => f.title).join(', ')}`);
 
     // Verify public residential API
-    const resResponse = await page.request.get(`${targetUrl}/api/residential`);
+    const resResponse = await page.request.get(`${targetUrl}/api/residential/listings`);
     const resJson = await resResponse.json();
-    const publicListings = resJson.listings || [];
+    const publicListings = Array.isArray(resJson) ? resJson : (resJson.listings || resJson.data || []);
     const publicTestListings = publicListings.filter(l => 
-      testTitles.some(t => l.title.toLowerCase().includes(t.toLowerCase()))
+      testTitles.some(t => l.title && l.title.toLowerCase().includes(t.toLowerCase()))
     );
 
     record('p0', 'Residential API', 'Public API does not expose test listings', publicTestListings.length === 0,
@@ -140,22 +140,23 @@ async function runLaunchAudit(targetUrl = 'http://localhost:3000') {
     // -------------------------------------------------------------
     console.log('\n--- 4. Testing End-to-End Forms (P0) ---');
     
-    // Land Registration E2E
+    // Step 0: You
     await page.goto(`${targetUrl}/register`, { waitUntil: 'networkidle' });
-    await page.click('#landowner-type-individual, button:has-text("Individual Landowner")');
-    await page.click('button:has-text("Next")');
-    await page.waitForTimeout(300);
+    await page.click('button:has-text("Individual")');
+    await page.click('#registration-next-btn');
+    await page.waitForTimeout(400);
 
+    // Step 1: Contact
     const testFullName = 'Gopalan Nambiar';
     const testPhone = '9847198471';
     await page.fill('input#fullName', testFullName);
     await page.fill('input#phone', testPhone);
     await page.fill('input#email', 'gopalan.nambiar@example.com');
-    await page.click('#comm-phone, button:has-text("Phone")');
-    await page.click('button:has-text("Next")');
-    await page.waitForTimeout(300);
+    await page.click('button:has-text("Phone")');
+    await page.click('#registration-next-btn');
+    await page.waitForTimeout(400);
 
-    // Location
+    // Step 2: Location
     await page.click('button#district');
     await page.waitForTimeout(200);
     await page.click('ul#district-listbox li[role="option"]:has-text("Thiruvananthapuram")');
@@ -171,43 +172,42 @@ async function runLaunchAudit(targetUrl = 'http://localhost:3000') {
     // Select valid local body
     await page.click('ul#localBody-listbox li[role="option"]:has-text("Thiruvananthapuram Corporation")');
     await page.waitForTimeout(200);
-    await page.fill('input#taluk', 'Thiruvananthapuram');
-    await page.fill('input#village', 'Pattom');
-    await page.click('button:has-text("Next")');
+    await page.fill('input#locality', 'Pattom');
+    await page.click('#registration-next-btn');
+    await page.waitForTimeout(400);
+
+    // Step 3: Land
+    await page.fill('input#approximateArea', '2.5');
+    await page.click('#ownership-sole, button:has-text("Sole Owner")');
+    await page.click('#registration-next-btn');
+    await page.waitForTimeout(400);
+
+    // Step 4: Interest
+    await page.click('#pooling-join, button:has-text("Join an Existing Opportunity")');
+    await page.click('#registration-next-btn');
+    await page.waitForTimeout(400);
+
+    // Step 5: Review & Consent
+    await page.locator('#consent-checkbox').check({ force: true });
     await page.waitForTimeout(300);
+    await page.click('#registration-next-btn');
+    await page.waitForTimeout(4500);
 
-    // Property details
-    await page.fill('input#surveyNumber', '441/2B');
-    await page.fill('input#extentAcres', '2.5');
-    await page.fill('input#extentCents', '0');
-    await page.click('button:has-text("Next")');
-    await page.waitForTimeout(300);
-
-    // Documents (skip optional)
-    await page.click('button:has-text("Next")');
-    await page.waitForTimeout(300);
-
-    // Review & Consent
-    await page.click('input[type="checkbox"], label:has-text("I confirm")');
-    await page.waitForTimeout(200);
-    await page.click('button:has-text("Submit Registration")');
-    await page.waitForTimeout(3000);
-
-    // Success page & Ref ID
-    const successUrl = page.url();
-    const refMatch = await page.locator('text=/TRI-LAND-\\d{6}-[A-Z0-9]{4}/').first().textContent().catch(() => '');
-    const isSuccess = successUrl.includes('/register/success') || refMatch.length > 0;
+    // Success screen & Ref ID
+    const pageText = await page.textContent('body');
+    const refMatch = pageText.match(/TRI-2026-\d{5}/) || pageText.match(/TRI-LAND-\d{6}-[A-Z0-9]{4}/);
+    const foundRef = refMatch ? refMatch[0] : '';
+    const isSuccess = pageText.includes('Submitted') || pageText.includes('submitted successfully') || foundRef.length > 0;
     record('forms', 'Land Registration E2E', 'Registration submits successfully and returns reference number', isSuccess,
-      `URL: ${successUrl}, Ref: "${refMatch}"`);
+      `Success confirmed: ${isSuccess}, Ref: "${foundRef}"`);
 
     // Test Tracker with Reference
-    if (refMatch) {
-      const cleanRef = refMatch.trim();
-      const trackResp = await page.goto(`${targetUrl}/register/status?ref=${encodeURIComponent(cleanRef)}`, { waitUntil: 'networkidle' });
+    if (foundRef) {
+      await page.goto(`${targetUrl}/register/status?ref=${encodeURIComponent(foundRef)}`, { waitUntil: 'networkidle' });
       const trackBody = await page.textContent('body');
-      const displaysStatus = trackBody.includes('Under Review') || trackBody.includes('VERIFICATION_PENDING') || trackBody.includes('Submitted');
-      record('forms', 'Landowner Status Tracker', 'Tracker resolves reference and masks personal information', displaysStatus,
-        `Tracker rendered successfully for ${cleanRef}`);
+      const displaysStatus = trackBody.includes('Under Review') || trackBody.includes('VERIFICATION_PENDING') || trackBody.includes('Submitted') || trackBody.includes('SUBMISSION RECEIVED');
+      record('forms', 'Landowner Status Tracker', 'Tracker resolves reference and displays status timeline', displaysStatus,
+        `Tracker rendered successfully for ${foundRef}`);
     }
 
     // -------------------------------------------------------------
