@@ -18,7 +18,7 @@ export async function PATCH(
       where: { id: params.id },
       include: {
         listing: {
-          select: { sellerId: true },
+          select: { id: true, sellerId: true, status: true },
         },
       },
     });
@@ -35,7 +35,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { status } = body;
+    const { status, markPropertySold, closeMode } = body;
 
     const validStatuses = ['NEW', 'CONTACTED', 'IN_PROGRESS', 'CLOSED'];
     if (!status || !validStatuses.includes(status)) {
@@ -43,6 +43,29 @@ export async function PATCH(
         { success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
         { status: 400 }
       );
+    }
+
+    const shouldMarkSold = status === 'CLOSED' && (markPropertySold === true || closeMode === 'MARK_SOLD');
+
+    if (shouldMarkSold) {
+      // Transactional close & mark property sold
+      const [updatedEnquiry, updatedListing] = await prisma.$transaction([
+        prisma.residentialEnquiry.update({
+          where: { id: params.id },
+          data: { status: 'CLOSED' },
+        }),
+        prisma.residentialListing.update({
+          where: { id: enquiry.listing.id || enquiry.listingId },
+          data: { status: 'SOLD' },
+        }),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        message: 'Enquiry closed and property marked as Sold',
+        enquiry: updatedEnquiry,
+        listingStatus: updatedListing.status,
+      });
     }
 
     const updated = await prisma.residentialEnquiry.update({
@@ -54,6 +77,7 @@ export async function PATCH(
       success: true,
       message: 'Enquiry status updated successfully',
       enquiry: updated,
+      listingStatus: enquiry.listing.status,
     });
   } catch (error) {
     console.error('Error in PATCH /api/seller/enquiries/[id]:', error);

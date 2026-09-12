@@ -39,6 +39,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Residential property not found' }, { status: 404 });
     }
 
+    // Availability Guard: Cannot send enquiries on sold, rented, or unavailable properties
+    if (listing.status !== 'PUBLISHED') {
+      return NextResponse.json(
+        { success: false, error: 'This property is no longer available for new enquiries.' },
+        { status: 400 }
+      );
+    }
+
     // Check optional authenticated buyer
     const authUser = await getAuthenticatedUser();
     const buyerId = authUser?.userId || null;

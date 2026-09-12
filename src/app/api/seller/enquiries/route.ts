@@ -27,6 +27,8 @@ export async function GET() {
             locality: true,
             price: true,
             priceType: true,
+            status: true,
+            listingPurpose: true,
           },
         },
       },

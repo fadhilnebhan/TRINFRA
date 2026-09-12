@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Home } from 'lucide-react';
+import { Home, Copy, Check, Search } from 'lucide-react';
 import Link from 'next/link';
 
 interface SuccessScreenProps {
@@ -10,8 +11,13 @@ interface SuccessScreenProps {
   fullName?: string;
 }
 
-export default function SuccessScreen({ communicationPreference, fullName }: SuccessScreenProps) {
+export default function SuccessScreen({
+  referenceNumber,
+  communicationPreference,
+  fullName,
+}: SuccessScreenProps) {
   const shouldReduceMotion = useReducedMotion();
+  const [copied, setCopied] = useState(false);
 
   const commMethodLabel =
     communicationPreference === 'whatsapp'
@@ -20,17 +26,25 @@ export default function SuccessScreen({ communicationPreference, fullName }: Suc
       ? 'phone'
       : 'email';
 
+  const handleCopy = () => {
+    if (referenceNumber) {
+      navigator.clipboard.writeText(referenceNumber);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-[560px] py-10 sm:py-14">
       <motion.div
         initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="text-center max-w-[500px] w-full mx-auto px-5 sm:px-6"
+        className="text-center max-w-[520px] w-full mx-auto px-5 sm:px-6"
       >
         {/* Animated Success Badge */}
         <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6 flex items-center justify-center">
-          {/* Subtle Ambient Glow */}
+          {/* Ambient Glow */}
           <motion.div
             initial={shouldReduceMotion ? { opacity: 0.3 } : { scale: 0.8, opacity: 0 }}
             animate={{ scale: 1.15, opacity: 0.35 }}
@@ -105,17 +119,66 @@ export default function SuccessScreen({ communicationPreference, fullName }: Suc
           initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.4, delay: 0.48 }}
-          className="text-[13px] sm:text-[14px] text-gray-500 mb-7 leading-relaxed"
+          className="text-[13px] sm:text-[14px] text-gray-500 mb-5 leading-relaxed"
         >
           {fullName ? `Thank you, ${fullName.split(' ')[0]}. ` : 'Thank you. '}
           Our team will review your details and get back to you.
         </motion.p>
 
+        {/* Highlighted Reference Number Card with Live Tracker CTA */}
+        {referenceNumber && (
+          <motion.div
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.4, delay: 0.52 }}
+            className="mb-6 p-4 sm:p-5 rounded-2xl bg-[#0E2115]/5 border border-[#0E2115]/15 text-left"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
+                  Your Registration Reference
+                </span>
+                <span className="font-mono text-base sm:text-lg font-extrabold text-[#0E2115] tracking-wider">
+                  {referenceNumber}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={13} className="text-emerald-600" />
+                      <span>Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={13} />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+
+                <Link
+                  href={`/register/status?ref=${encodeURIComponent(referenceNumber)}`}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary-btn text-white text-xs font-bold shadow-xs transition-colors"
+                >
+                  <Search size={13} />
+                  <span>Track Status</span>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* What Happens Next Card */}
         <motion.div
           initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.4, delay: 0.54 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.4, delay: 0.56 }}
           className="bg-white border border-gray-200/90 rounded-2xl p-5 sm:p-6 mb-7 text-left shadow-2xs"
         >
           <h4 className="text-[14px] sm:text-[15px] font-bold text-foreground mb-3.5">
@@ -137,7 +200,7 @@ export default function SuccessScreen({ communicationPreference, fullName }: Suc
           </div>
         </motion.div>
 
-        {/* Best-effort Disclaimer */}
+        {/* Disclaimer */}
         <p className="text-[11px] text-gray-400 mb-7 leading-relaxed">
           This submission does not constitute a commitment, guarantee of approval, or promise of specific returns or development outcomes. Trinfra facilitates connections and processes on a best-effort basis.
         </p>
@@ -149,19 +212,21 @@ export default function SuccessScreen({ communicationPreference, fullName }: Suc
           transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.4, delay: 0.6 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-3"
         >
+          {referenceNumber && (
+            <Link
+              href={`/register/status?ref=${encodeURIComponent(referenceNumber)}`}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-white text-[14px] font-semibold hover:bg-primary-dark shadow-[0_4px_14px_rgba(14,33,21,0.18)] transition-all"
+            >
+              <Search size={16} />
+              Track Registration Status
+            </Link>
+          )}
           <Link
             href="/"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-white text-[14px] font-semibold hover:bg-primary-dark shadow-[0_4px_14px_rgba(14,33,21,0.18)] transition-all group"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-gray-200 text-[14px] font-semibold text-foreground hover:bg-gray-50 transition-colors"
           >
             <Home size={16} />
             Return Home
-          </Link>
-          <Link
-            href="/#opportunities"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-gray-200 text-[14px] font-semibold text-foreground hover:bg-gray-50 transition-colors"
-          >
-            Explore Opportunities
-            <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </motion.div>
       </motion.div>

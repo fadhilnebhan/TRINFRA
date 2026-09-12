@@ -52,7 +52,7 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { verificationStatus, notes } = body;
+    const { verificationStatus, notes, clarificationReason } = body;
 
     const existing = await prisma.landowner.findFirst({
       where: {
@@ -69,16 +69,32 @@ export async function PATCH(
       data: {
         ...(verificationStatus && { verificationStatus }),
         ...(notes !== undefined && { notes }),
+        ...(clarificationReason && { notes: `Clarification Required: ${clarificationReason.trim()}` }),
       },
     });
 
+    // If clarification reason was passed, also create AdminNote
+    if (clarificationReason?.trim()) {
+      await prisma.adminNote.create({
+        data: {
+          landownerId: existing.id,
+          content: `Clarification Required: ${clarificationReason.trim()}`,
+          authorName: admin.fullName || 'Verification Committee',
+          authorRole: 'Verification Committee',
+        },
+      });
+    }
+
     // Create activity notification
     if (verificationStatus && verificationStatus !== existing.verificationStatus) {
+      const isClarification = verificationStatus === 'NEEDS_CLARIFICATION';
       await prisma.notification.create({
         data: {
           type: 'verification_updated',
-          title: 'Verification Status Updated',
-          message: `${existing.fullName} (${existing.referenceNumber}) updated to ${verificationStatus}.`,
+          title: isClarification ? 'Clarification Requested' : 'Verification Status Updated',
+          message: isClarification
+            ? `Clarification requested for ${existing.fullName} (${existing.referenceNumber}): ${clarificationReason || 'Additional details required.'}`
+            : `${existing.fullName} (${existing.referenceNumber}) updated to ${verificationStatus}.`,
           reference: existing.referenceNumber,
           read: false,
         },

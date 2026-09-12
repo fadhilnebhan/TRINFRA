@@ -6,10 +6,6 @@ import { useRouter } from 'next/navigation';
 import {
   Building2,
   PlusCircle,
-  Clock,
-  CheckCircle,
-  XCircle,
-  FileEdit,
   MessageSquare,
   LogOut,
   Trash2,
@@ -19,6 +15,7 @@ import {
   AlertTriangle,
   ExternalLink,
 } from 'lucide-react';
+import SellerNavbar from '@/components/seller/SellerNavbar';
 import { formatPrice } from '@/components/residential/ResidentialCard';
 
 export default function SellerDashboardPage() {
@@ -102,6 +99,31 @@ export default function SellerDashboardPage() {
     }
   };
 
+  const handleUpdateAvailability = async (id: string, newStatus: string) => {
+    setActionLoading(id);
+    setStatusMessage(null);
+    try {
+      const res = await fetch(`/api/seller/listings/${id}/availability`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update property availability');
+      }
+      setStatusMessage({
+        type: 'success',
+        text: `Property availability updated to ${newStatus === 'PUBLISHED' ? 'Still Available (Live)' : newStatus}`,
+      });
+      await fetchSellerData();
+    } catch (err: any) {
+      setStatusMessage({ type: 'error', text: err.message });
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleDeleteListing = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
       return;
@@ -132,7 +154,10 @@ export default function SellerDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-20 pt-20 sm:pt-24">
+    <div className="min-h-screen bg-background text-foreground pb-20">
+      {/* ================= REUSABLE SELLER NAVBAR ================= */}
+      <SellerNavbar sellerName={seller?.fullName} companyName={seller?.companyName} />
+
       {/* ================= TOP SELLER BAR ================= */}
       <div className="bg-white border-b border-gray-200/80 py-5 sm:py-6">
         <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16">
@@ -170,7 +195,7 @@ export default function SellerDashboardPage() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 min-h-[38px] min-w-[38px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center"
+                className="p-2 min-h-[38px] min-w-[38px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
                 title="Sign out"
                 aria-label="Sign out"
               >
@@ -194,7 +219,7 @@ export default function SellerDashboardPage() {
             <span>{statusMessage.text}</span>
             <button
               onClick={() => setStatusMessage(null)}
-              className="text-xs opacity-60 hover:opacity-100 font-bold ml-2"
+              className="text-xs opacity-60 hover:opacity-100 font-bold ml-2 cursor-pointer"
               aria-label="Dismiss message"
             >
               ✕
@@ -202,56 +227,11 @@ export default function SellerDashboardPage() {
           </div>
         )}
 
-        {/* Metric Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5 mb-6 sm:mb-8">
-          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-              Total
-            </span>
-            <span className="text-xl sm:text-2xl font-heading font-bold text-gray-900">{stats.total}</span>
-          </div>
-
-          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-primary/20 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-primary block mb-1 flex items-center gap-1">
-              <CheckCircle size={12} /> Published
-            </span>
-            <span className="text-xl sm:text-2xl font-heading font-bold text-primary">{stats.published}</span>
-          </div>
-
-          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-accent/30 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-accent block mb-1 flex items-center gap-1">
-              <Clock size={12} /> Under Review
-            </span>
-            <span className="text-xl sm:text-2xl font-heading font-bold text-accent">{stats.pending}</span>
-          </div>
-
-          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-gray-200/80 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-500 block mb-1 flex items-center gap-1">
-              <FileEdit size={12} /> Drafts
-            </span>
-            <span className="text-xl sm:text-2xl font-heading font-bold text-gray-700">{stats.draft}</span>
-          </div>
-
-          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-red-200/80 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-red-600 block mb-1 flex items-center gap-1">
-              <XCircle size={12} /> Rejected
-            </span>
-            <span className="text-xl sm:text-2xl font-heading font-bold text-red-700">{stats.rejected}</span>
-          </div>
-
-          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-primary/20 shadow-2xs">
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-primary block mb-1 flex items-center gap-1">
-              <MessageSquare size={12} /> Enquiries
-            </span>
-            <span className="text-xl sm:text-2xl font-heading font-bold text-primary">{stats.totalEnquiries}</span>
-          </div>
-        </div>
-
         {/* Tab Filters */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 border-b border-gray-200/80 no-scrollbar">
           {[
             { key: 'ALL', label: `All (${stats.total})` },
-            { key: 'PUBLISHED', label: `Published (${stats.published})` },
+            { key: 'PUBLISHED', label: `Live / Available (${stats.published})` },
             { key: 'PENDING_REVIEW', label: `Pending Review (${stats.pending})` },
             { key: 'DRAFT', label: `Drafts (${stats.draft})` },
             { key: 'REJECTED', label: `Rejected (${stats.rejected})` },
@@ -259,7 +239,7 @@ export default function SellerDashboardPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-3.5 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap shrink-0 ${
+              className={`px-3.5 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === tab.key
                   ? 'bg-primary text-white shadow-xs'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200/80'
@@ -291,8 +271,30 @@ export default function SellerDashboardPage() {
 
               if (listing.status === 'PUBLISHED') {
                 statusBadge = (
-                  <span className="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-primary/10 text-primary border border-primary/20">
-                    Live / Published
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Still Available
+                  </span>
+                );
+              } else if (listing.status === 'SOLD') {
+                statusBadge = (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    Sold
+                  </span>
+                );
+              } else if (listing.status === 'RENTED') {
+                statusBadge = (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    Rented
+                  </span>
+                );
+              } else if (listing.status === 'UNPUBLISHED' || listing.status === 'ARCHIVED') {
+                statusBadge = (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-700 border border-gray-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                    Unavailable
                   </span>
                 );
               } else if (listing.status === 'PENDING_REVIEW') {
@@ -314,6 +316,10 @@ export default function SellerDashboardPage() {
                   </span>
                 );
               }
+
+              const isAvailabilityControllable = ['PUBLISHED', 'SOLD', 'RENTED', 'UNPUBLISHED'].includes(
+                listing.status
+              );
 
               return (
                 <div
@@ -347,15 +353,40 @@ export default function SellerDashboardPage() {
                           <span>•</span>
                           <span>{listing.bedrooms} BHK</span>
                           <span>•</span>
-                          <span>{listing.area} {listing.areaUnit}</span>
+                          <span>
+                            {listing.area} {listing.areaUnit}
+                          </span>
                           <span>•</span>
-                          <span className="font-medium text-gray-600">{listing._count?.enquiries || 0} enquiries</span>
+                          <span className="font-medium text-gray-600">
+                            {listing._count?.enquiries || 0} enquiries
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
+                    {/* Action Buttons & Seller Availability Control */}
                     <div className="flex flex-wrap items-center gap-2 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-gray-100 justify-end">
+                      {/* Seller Availability Selector for Approved Listings */}
+                      {isAvailabilityControllable && (
+                        <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200/90 rounded-xl px-2.5 py-1.5">
+                          <span className="text-[11px] font-semibold text-gray-500 whitespace-nowrap">
+                            Availability:
+                          </span>
+                          <select
+                            value={listing.status}
+                            disabled={actionLoading === listing.id}
+                            onChange={(e) => handleUpdateAvailability(listing.id, e.target.value)}
+                            className="bg-transparent text-xs font-bold text-gray-800 outline-none cursor-pointer py-0.5"
+                            aria-label="Change listing availability"
+                          >
+                            <option value="PUBLISHED">Still Available</option>
+                            <option value="SOLD">Mark as Sold</option>
+                            <option value="RENTED">Mark as Rented</option>
+                            <option value="UNPUBLISHED">Unavailable</option>
+                          </select>
+                        </div>
+                      )}
+
                       {listing.status === 'PUBLISHED' && (
                         <Link
                           href={`/residential/${listing.slug}`}
@@ -372,7 +403,7 @@ export default function SellerDashboardPage() {
                         <button
                           onClick={() => handleSubmitForReview(listing.id)}
                           disabled={actionLoading === listing.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-semibold text-white bg-primary hover:bg-primary-btn rounded-lg shadow-2xs transition-all disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[34px] text-xs font-semibold text-white bg-primary hover:bg-primary-btn rounded-lg shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
                         >
                           <Send size={12} />
                           <span>Submit for Review</span>
@@ -390,7 +421,7 @@ export default function SellerDashboardPage() {
                       <button
                         onClick={() => handleDeleteListing(listing.id, listing.title)}
                         disabled={actionLoading === listing.id}
-                        className="p-2 min-h-[34px] min-w-[34px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center"
+                        className="p-2 min-h-[34px] min-w-[34px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
                         title="Delete listing"
                         aria-label="Delete listing"
                       >

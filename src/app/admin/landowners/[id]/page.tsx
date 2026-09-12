@@ -157,6 +157,7 @@ export default function LandownerDetailPage() {
   const [newNoteContent, setNewNoteContent] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [statusFeedback, setStatusFeedback] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   // Document upload state
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -212,10 +213,18 @@ export default function LandownerDetailPage() {
     if (!lead) return;
 
     try {
+      const clarReason =
+        newStatus === 'NEEDS_CLARIFICATION' && reasonNote
+          ? reasonNote.replace(/^Clarification Required:\s*/i, '').trim()
+          : undefined;
+
       const res = await fetch(`/api/admin/landowners/${lead.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ verificationStatus: newStatus }),
+        body: JSON.stringify({
+          verificationStatus: newStatus,
+          clarificationReason: clarReason,
+        }),
       });
 
       if (res.ok) {
@@ -239,11 +248,28 @@ export default function LandownerDetailPage() {
           }
         }
 
-        setStatusFeedback(`Verification status updated to ${newStatus}`);
-        setTimeout(() => setStatusFeedback(null), 3500);
+        let feedbackText = `Verification status updated to ${newStatus}`;
+        if (newStatus === 'VERIFICATION_PENDING') {
+          feedbackText = 'Verification status updated to Verification Pending.';
+        } else if (newStatus === 'NEEDS_CLARIFICATION') {
+          feedbackText = 'Clarification request sent to landowner.';
+        } else if (newStatus === 'VERIFIED') {
+          feedbackText = 'Landowner successfully verified.';
+        } else if (newStatus === 'REJECTED') {
+          feedbackText = 'Landowner registration marked as Rejected.';
+        }
+
+        setStatusFeedback(feedbackText);
+        setTimeout(() => setStatusFeedback(null), 4000);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setStatusError(errData.error || 'Failed to update verification status.');
+        setTimeout(() => setStatusError(null), 4000);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error updating status:', err);
+      setStatusError(err.message || 'Failed to update status.');
+      setTimeout(() => setStatusError(null), 4000);
     } finally {
       setConfirmStatus(null);
       setClarificationModal(false);
@@ -425,6 +451,11 @@ export default function LandownerDetailPage() {
           {statusFeedback && (
             <span className="text-[12px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 animate-in fade-in">
               {statusFeedback}
+            </span>
+          )}
+          {statusError && (
+            <span className="text-[12px] font-semibold text-red-700 bg-red-50 px-2.5 py-1 rounded-md border border-red-200 animate-in fade-in">
+              {statusError}
             </span>
           )}
 

@@ -43,8 +43,9 @@ export default function Footer() {
               <li><Link href="/#landowners" className="text-[14px] text-white/60 hover:text-white transition-colors">Landowners</Link></li>
               <li><Link href="/opportunities" className="text-[14px] text-white/60 hover:text-white transition-colors">Opportunities</Link></li>
               <li><Link href="/projects" className="text-[14px] text-white/60 hover:text-white transition-colors">Projects</Link></li>
-              <li><Link href="#developers" className="text-[14px] text-white/60 hover:text-white transition-colors">Developers & Investors</Link></li>
-              <li><Link href="#knowledge" className="text-[14px] text-white/60 hover:text-white transition-colors">Knowledge Centre</Link></li>
+              <li><Link href="/register/status" className="text-[14px] text-white/60 hover:text-white transition-colors">Track Registration</Link></li>
+              <li><Link href="/#developers" className="text-[14px] text-white/60 hover:text-white transition-colors">Developers & Investors</Link></li>
+              <li><Link href="/knowledge-centre/what-is-land-pooling" className="text-[14px] text-white/60 hover:text-white transition-colors">Knowledge Centre</Link></li>
             </ul>
           </div>
           

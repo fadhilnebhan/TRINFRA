@@ -20,7 +20,6 @@ export const KERALA_DISTRICTS: District[] = [
       { name: 'Attingal Municipality', type: 'municipality' },
       { name: 'Varkala Municipality', type: 'municipality' },
       { name: 'Nedumangad Municipality', type: 'municipality' },
-      { name: 'Kazhakkoottam Panchayat', type: 'panchayat' },
       { name: 'Venjaramoodu Panchayat', type: 'panchayat' },
     ],
   },
