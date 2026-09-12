@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { getPublicResidentialListingBySlugOrId } from '@/lib/server/residential';
 import ResidentialDetail from '@/components/residential/ResidentialDetail';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface PageProps {
   params: {
