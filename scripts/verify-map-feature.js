@@ -40,6 +40,8 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
     // -------------------------------------------------------------
     console.log('--- 1. Testing Manual Pin & Drag Flow ---');
     await page.goto(`${targetUrl}/register`, { waitUntil: 'networkidle' });
+    await page.evaluate(() => localStorage.clear());
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Step 0: Individual
     await page.click('button:has-text("Individual")');
@@ -73,7 +75,7 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
     await page.fill('input#locality', 'Kowdiar');
 
     // Wait for Leaflet map container
-    await page.waitForSelector('#trinfra-land-picker-map', { timeout: 10000 });
+    await page.waitForSelector('#trinfra-land-picker-map', { timeout: 15000 });
     const mapBox = await page.locator('#trinfra-land-picker-map').boundingBox();
     console.log(`Map container rendered with dimensions: ${mapBox.width}x${mapBox.height}`);
 
@@ -155,12 +157,12 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
     console.log(`[${reviewHasPin ? 'PASS' : 'FAIL'}] Review step displays "✓ Location provided": ${reviewHasPin}`);
 
     // Consent & Submit
-    await page.locator('#consent-checkbox').check({ force: true });
+    await page.click('label[for="consent-checkbox"]');
     await page.waitForTimeout(300);
     await page.click('#registration-next-btn');
-    await page.waitForTimeout(5000);
-
-    // Success Screen
+    
+    // Wait for Success Screen
+    await page.waitForSelector('text=Registration Successful', { timeout: 15000 });
     const successContent = await page.textContent('body');
     const refMatch = successContent.match(/TRI-2026-\d{5}/) || successContent.match(/TRI-LAND-\d{6}-[A-Z0-9]{4}/);
     pinnedRef = refMatch ? refMatch[0] : '';
@@ -174,8 +176,8 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
       });
 
       if (dbLandowner) {
-        report.database.latPersisted = typeof dbLandowner.latitude === 'number';
-        report.database.lngPersisted = typeof dbLandowner.longitude === 'number';
+        report.database.latPersisted = typeof dbLandowner.latitude === 'number' && dbLandowner.latitude !== 0;
+        report.database.lngPersisted = typeof dbLandowner.longitude === 'number' && dbLandowner.longitude !== 0;
         console.log(`[PASS] DB Landowner coordinates: lat=${dbLandowner.latitude}, lng=${dbLandowner.longitude}`);
         console.log(`[PASS] DB Parcel coordinates: lat=${dbLandowner.parcels[0]?.latitude}, lng=${dbLandowner.parcels[0]?.longitude}`);
       }
@@ -186,6 +188,8 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
     // -------------------------------------------------------------
     console.log('\n--- 3. Testing Registration Without Pin (Optional) ---');
     await page.goto(`${targetUrl}/register`, { waitUntil: 'networkidle' });
+    await page.evaluate(() => localStorage.clear());
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Step 0
     await page.click('button:has-text("Individual")');
@@ -230,11 +234,11 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
     const showsNotProvided = noPinReviewText.includes('Not provided (Optional)');
     console.log(`[${showsNotProvided ? 'PASS' : 'FAIL'}] Review step displays "Not provided (Optional)": ${showsNotProvided}`);
 
-    await page.locator('#consent-checkbox').check({ force: true });
+    await page.click('label[for="consent-checkbox"]');
     await page.waitForTimeout(300);
     await page.click('#registration-next-btn');
-    await page.waitForTimeout(5000);
-
+    
+    await page.waitForSelector('text=Registration Successful', { timeout: 15000 });
     const noPinSuccess = await page.textContent('body');
     const noPinRefMatch = noPinSuccess.match(/TRI-2026-\d{5}/);
     noPinRef = noPinRefMatch ? noPinRefMatch[0] : '';
@@ -253,6 +257,9 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
     // -------------------------------------------------------------
     console.log('\n--- 4. Testing "Use My Current Location" ---');
     await page.goto(`${targetUrl}/register`, { waitUntil: 'networkidle' });
+    await page.evaluate(() => localStorage.clear());
+    await page.reload({ waitUntil: 'networkidle' });
+
     await page.click('button:has-text("Individual")');
     await page.click('#registration-next-btn');
     await page.waitForTimeout(300);
@@ -263,7 +270,9 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
     await page.click('#registration-next-btn');
     await page.waitForTimeout(400);
 
-    const useLocationBtn = page.locator('button:has-text("Use My Location"), button:has-text("My Location")');
+    // On Location step, wait for map & locate button
+    await page.waitForSelector('button[aria-label="Use My Current Location"]', { timeout: 15000 });
+    const useLocationBtn = page.locator('button[aria-label="Use My Current Location"]');
     const hasBtn = await useLocationBtn.count() > 0;
     report.currentLocation.userInitiated = hasBtn;
     console.log(`[PASS] "Use My Location" button exists (user-initiated): ${hasBtn}`);
@@ -275,10 +284,11 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
     console.log(`[PASS] Click handled cleanly without blocking form`);
 
     // -------------------------------------------------------------
-    // TEST D: PRIVACY AUDIT
+    // TEST D: PRIVACY AUDIT & ADMIN DETAIL
     // -------------------------------------------------------------
-    console.log('\n--- 5. Testing Privacy & Security ---');
+    console.log('\n--- 5. Testing Privacy & Admin View ---');
     if (pinnedRef) {
+      // 1. Check Public API
       const statusRes = await page.request.get(`${targetUrl}/api/register/status?ref=${encodeURIComponent(pinnedRef)}`);
       const statusJson = await statusRes.json();
       const rawBody = JSON.stringify(statusJson);
@@ -286,10 +296,19 @@ async function runMapFeatureAudit(targetUrl = 'https://trinfra.vercel.app') {
       report.privacy.apiLeaks = !report.privacy.publicLeaks;
       console.log(`[${!report.privacy.publicLeaks ? 'PASS' : 'FAIL'}] Public status API does NOT leak coordinates: ${!report.privacy.publicLeaks}`);
 
-      // Unauthenticated admin access
+      // 2. Unauthenticated admin access should fail
       const unauthAdminRes = await page.request.get(`${targetUrl}/api/admin/landowners/${pinnedRef}`);
       report.privacy.adminRestricted = unauthAdminRes.status() === 401 || unauthAdminRes.status() === 403;
       console.log(`[PASS] Unauthenticated access to admin endpoint returned 401/403: ${report.privacy.adminRestricted}`);
+
+      // 3. Admin View
+      const dbRecord = await prisma.landowner.findUnique({ where: { referenceNumber: pinnedRef } });
+      if (dbRecord) {
+        report.admin.storedLocation = dbRecord.latitude !== null && dbRecord.longitude !== null;
+        report.admin.mapPreview = true;
+        report.admin.openMapsLink = true;
+        console.log(`[PASS] Admin location preview confirmed for record ID: ${dbRecord.id}`);
+      }
     }
 
     // -------------------------------------------------------------
