@@ -156,7 +156,7 @@ export default function StepReview({ data, updateField, errors, onGoToStep }: St
           <div>
             <p className="text-[13px] text-foreground leading-relaxed">
               I confirm that the information provided is accurate to the best of my knowledge. I consent to Trinfra processing this data in accordance with the{' '}
-              <Link href="#" className="text-accent underline hover:text-accent-hover">Privacy Policy</Link>.
+              <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="text-accent underline hover:text-accent-hover">Privacy Policy</Link>.
             </p>
           </div>
         </label>

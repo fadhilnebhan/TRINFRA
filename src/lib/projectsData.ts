@@ -28,6 +28,13 @@ export interface Project {
   featured?: boolean;
   progressPercentage: number;
   updatedAt: string;
+  opportunityId?: string | null;
+  opportunity?: {
+    id: string;
+    title: string;
+    slug: string;
+    status: string;
+  } | null;
 }
 
 export const PROJECTS: Project[] = [
@@ -171,6 +178,27 @@ export const PROJECTS: Project[] = [
     tags: ['Hospitality', 'Eco-Tourism'],
     progressPercentage: 25,
     updatedAt: '2026-07-05',
+  },
+  {
+    id: 'PROJ-6',
+    projectName: 'Trivandrum Outer Ring Road',
+    slug: 'trivandrum-outer-ring-road',
+    location: 'Navaikulam to Vizhinjam, Thiruvananthapuram, Kerala',
+    district: 'Thiruvananthapuram',
+    approximateArea: 'Approx. 240 Acres',
+    areaNum: 240,
+    participatingLandowners: 42,
+    status: 'In Progress',
+    developmentStage: 'Planning',
+    image: '/images/digital_map.jpeg',
+    description:
+      'Strategic infrastructure corridor connecting Navaikulam to Vizhinjam Port through collaborative land pooling.',
+    overview:
+      'The Trivandrum Outer Ring Road (ORR) is a transformative 240-acre infrastructure growth corridor uniting 42 participating landowners. Connecting Navaikulam to the international seaport at Vizhinjam, this project coordinates land aggregation for logistics nodes, commercial zones, and smart transit infrastructure.',
+    tags: ['Infrastructure', 'Logistics', 'In Progress'],
+    featured: true,
+    progressPercentage: 45,
+    updatedAt: '2026-08-30',
   },
 ];
 

@@ -74,6 +74,15 @@ export function formatPublicProject(proj: {
     tags: parsedTags,
     featured: proj.featured,
     updatedAt: proj.updatedAt ? proj.updatedAt.toISOString().split('T')[0] : '2026-08-15',
+    opportunityId: proj.opportunityId,
+    opportunity: (proj as any).opportunity
+      ? {
+          id: (proj as any).opportunity.id,
+          title: (proj as any).opportunity.title,
+          slug: (proj as any).opportunity.slug,
+          status: (proj as any).opportunity.status,
+        }
+      : null,
   };
 }
 
@@ -83,6 +92,7 @@ export function formatPublicProject(proj: {
 export async function getPublicProjects(): Promise<Project[]> {
   try {
     const projects = await prisma.project.findMany({
+      include: { opportunity: true },
       orderBy: { createdAt: 'desc' },
     });
     return projects.map(formatPublicProject);
@@ -102,6 +112,9 @@ export async function getPublicProjectByIdOrSlug(idOrSlug: string): Promise<Proj
     const proj = await prisma.project.findFirst({
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      },
+      include: {
+        opportunity: true,
       },
     });
     if (!proj) return null;

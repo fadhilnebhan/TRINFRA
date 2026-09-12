@@ -2,12 +2,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import OpportunityDetail from '@/components/opportunities/OpportunityDetail';
+import ProjectDetailView from '@/components/projects/ProjectDetailView';
 import { getPublicProjectByIdOrSlug } from '@/lib/server/projects';
-import {
-  getPublicOpportunityByIdOrSlug,
-  getPublicOpportunities,
-} from '@/lib/server/opportunities';
+import { getPublicOpportunityByIdOrSlug, getPublicOpportunities } from '@/lib/server/opportunities';
+import OpportunityDetail from '@/components/opportunities/OpportunityDetail';
 
 interface PageProps {
   params: { id: string };
@@ -16,30 +14,17 @@ interface PageProps {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// Project to Opportunity mapping for legacy detail reuse
-const PROJECT_OPPORTUNITY_MAP: Record<string, string> = {
-  'PROJ-1': 'OPP-1',
-  'riverside-development-project': 'OPP-1',
-  'PROJ-2': 'OPP-4',
-  'greenfield-township': 'OPP-4',
-  'PROJ-3': 'OPP-2',
-  'lakeside-living': 'OPP-2',
-  'PROJ-4': 'OPP-3',
-  'tech-park-corridor': 'OPP-3',
-  'PROJ-5': 'OPP-1',
-  'community-living': 'OPP-1',
-};
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const project = await getPublicProjectByIdOrSlug(params.id);
   if (project) {
     return {
       title: `${project.projectName} | TRINFRA Projects`,
-      description: project.description,
+      description: project.description || `Explore ${project.projectName} in ${project.district}, Kerala on TRINFRA.`,
     };
   }
-  const mappedOppId = PROJECT_OPPORTUNITY_MAP[params.id] || params.id;
-  const opp = await getPublicOpportunityByIdOrSlug(mappedOppId);
+
+  // Fallback check for legacy opportunity routes
+  const opp = await getPublicOpportunityByIdOrSlug(params.id);
   if (opp) {
     return {
       title: `${opp.title} | TRINFRA Projects`,
@@ -54,29 +39,43 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ProjectDetailPage({ params }: PageProps) {
+  // 1. Primary lookup: Project in PostgreSQL
   const project = await getPublicProjectByIdOrSlug(params.id);
-  const mappedOppId = PROJECT_OPPORTUNITY_MAP[params.id] || params.id;
-  const opp = await getPublicOpportunityByIdOrSlug(mappedOppId);
 
-  if (!project && !opp) {
-    notFound();
+  if (project) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#FAFBF9] font-sans text-foreground">
+        <Navbar />
+        <main className="flex-grow pt-[72px]">
+          <ProjectDetailView initialProject={project} projectId={params.id} />
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
-  const allOpps = await getPublicOpportunities();
-  const relatedOpps = opp ? allOpps.filter((o) => o.id !== opp.id).slice(0, 3) : allOpps.slice(0, 3);
+  // 2. Legacy fallback lookup for opportunity if linked
+  const opp = await getPublicOpportunityByIdOrSlug(params.id);
+  if (opp) {
+    const allOpps = await getPublicOpportunities();
+    const relatedOpps = allOpps.filter((o) => o.id !== opp.id).slice(0, 3);
 
-  return (
-    <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">
-      <Navbar />
-      <main className="flex-grow pt-[72px]">
-        <OpportunityDetail
-          opportunityId={opp ? opp.id : mappedOppId}
-          initialOpportunity={opp}
-          relatedOpportunities={relatedOpps}
-          projectId={params.id}
-        />
-      </main>
-      <Footer />
-    </div>
-  );
+    return (
+      <div className="min-h-screen flex flex-col bg-background font-sans text-foreground">
+        <Navbar />
+        <main className="flex-grow pt-[72px]">
+          <OpportunityDetail
+            opportunityId={opp.id}
+            initialOpportunity={opp}
+            relatedOpportunities={relatedOpps}
+            projectId={params.id}
+          />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // 3. Genuine 404
+  notFound();
 }
