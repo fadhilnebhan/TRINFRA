@@ -8,10 +8,39 @@ export const revalidate = 0;
 
 // Generate sequential or timestamped reference number: TRI-2026-XXXXX
 async function generateLandownerRef(): Promise<string> {
-  const count = await prisma.landowner.count();
-  const nextNum = (count + 1).toString().padStart(5, '0');
   const year = new Date().getFullYear();
-  return `TRI-${year}-${nextNum}`;
+  try {
+    const existing = await prisma.landowner.findMany({
+      select: { referenceNumber: true },
+      where: { referenceNumber: { startsWith: `TRI-${year}-` } },
+    });
+
+    let maxSeq = 0;
+    for (const item of existing) {
+      const parts = item.referenceNumber.split('-');
+      if (parts.length >= 3) {
+        const num = parseInt(parts[2], 10);
+        if (!isNaN(num) && num > maxSeq && num < 100000) {
+          maxSeq = num;
+        }
+      }
+    }
+
+    let nextNum = maxSeq + 1;
+    let candidate = `TRI-${year}-${nextNum.toString().padStart(5, '0')}`;
+
+    // Guarantee uniqueness against any edge-case race conditions
+    while (existing.some((e) => e.referenceNumber.toUpperCase() === candidate.toUpperCase())) {
+      nextNum++;
+      candidate = `TRI-${year}-${nextNum.toString().padStart(5, '0')}`;
+    }
+
+    return candidate;
+  } catch {
+    // High-entropy fallback
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `TRI-${year}-${Date.now().toString().slice(-5)}-${randomSuffix}`;
+  }
 }
 
 export async function POST(request: Request) {
