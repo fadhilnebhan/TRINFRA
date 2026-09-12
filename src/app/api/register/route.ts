@@ -78,6 +78,54 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'District is required' }, { status: 400 });
     }
 
+    // Server-side coordinate validation (Requirement 10)
+    let validatedLatitude: number | null = null;
+    let validatedLongitude: number | null = null;
+
+    if (mapLocation !== undefined && mapLocation !== null) {
+      if (typeof mapLocation !== 'object' || Array.isArray(mapLocation)) {
+        return NextResponse.json(
+          { error: 'Invalid mapLocation payload structure' },
+          { status: 400 }
+        );
+      }
+
+      const { lat, lng } = mapLocation as { lat?: unknown; lng?: unknown };
+      const hasLat = lat !== undefined && lat !== null && lat !== '';
+      const hasLng = lng !== undefined && lng !== null && lng !== '';
+
+      if (hasLat !== hasLng) {
+        return NextResponse.json(
+          { error: 'Incomplete coordinates. Both latitude and longitude must be provided together.' },
+          { status: 400 }
+        );
+      }
+
+      if (hasLat && hasLng) {
+        const numLat = typeof lat === 'number' ? lat : Number(lat);
+        const numLng = typeof lng === 'number' ? lng : Number(lng);
+
+        if (
+          !Number.isFinite(numLat) ||
+          !Number.isFinite(numLng) ||
+          isNaN(numLat) ||
+          isNaN(numLng) ||
+          numLat < -90 ||
+          numLat > 90 ||
+          numLng < -180 ||
+          numLng > 180
+        ) {
+          return NextResponse.json(
+            { error: 'Invalid coordinates. Latitude must be between -90 and 90, and longitude between -180 and 180.' },
+            { status: 400 }
+          );
+        }
+
+        validatedLatitude = numLat;
+        validatedLongitude = numLng;
+      }
+    }
+
     const areaValue = parseFloat(approximateArea) || 0;
     const refNumber = await generateLandownerRef();
 
@@ -108,6 +156,8 @@ export async function POST(request: Request) {
           locality: locality?.trim() || 'Town / Village',
           approximateArea: areaValue,
           areaUnit: areaUnit || 'Acres',
+          latitude: validatedLatitude,
+          longitude: validatedLongitude,
           ownershipStatus: ownershipStatus || 'Sole Ownership',
           poolingInterest: poolingInterest || 'Join Existing Pool',
           verificationStatus: 'NEW',
@@ -124,8 +174,8 @@ export async function POST(request: Request) {
           locality: locality?.trim() || 'Town / Village',
           approximateArea: areaValue,
           areaUnit: areaUnit || 'Acres',
-          latitude: mapLocation?.lat || null,
-          longitude: mapLocation?.lng || null,
+          latitude: validatedLatitude,
+          longitude: validatedLongitude,
           ownershipStatus: ownershipStatus || 'Sole Ownership',
         },
       });

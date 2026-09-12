@@ -173,3 +173,30 @@ export function getLocalBodies(districtName: string): LocalBody[] {
   const district = KERALA_DISTRICTS.find(d => d.name === districtName);
   return district ? district.localBodies : [];
 }
+
+/**
+ * Standard geographical coordinates for Kerala and all 14 district administrative centers.
+ */
+export const KERALA_CENTER: [number, number] = [10.8505, 76.2711];
+
+export const DISTRICT_COORDINATES: Record<string, [number, number]> = {
+  'Thiruvananthapuram': [8.5241, 76.9366],
+  'Kollam': [8.8932, 76.6141],
+  'Pathanamthitta': [9.2648, 76.7870],
+  'Alappuzha': [9.4981, 76.3388],
+  'Kottayam': [9.5916, 76.5222],
+  'Idukki': [9.9189, 77.1025],
+  'Ernakulam': [9.9816, 76.2999],
+  'Thrissur': [10.5276, 76.2144],
+  'Palakkad': [10.7867, 76.6548],
+  'Malappuram': [11.0732, 76.0740],
+  'Kozhikode': [11.2588, 75.7804],
+  'Wayanad': [11.6854, 76.1320],
+  'Kannur': [11.8745, 75.3704],
+  'Kasaragod': [12.5102, 74.9852],
+};
+
+export function getDistrictCoordinates(districtName: string): [number, number] | null {
+  return DISTRICT_COORDINATES[districtName] || null;
+}
+

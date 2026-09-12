@@ -1,9 +1,25 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { StepProps } from './types';
-import { MapPin } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { getDistrictNames, getLocalBodies } from '@/lib/locationData';
 import CustomSelect from '@/components/opportunities/CustomSelect';
+
+const LandLocationPicker = dynamic(
+  () => import('@/components/maps/LandLocationPicker'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[300px] sm:h-[320px] rounded-xl border border-gray-200 bg-surface-alt flex flex-col items-center justify-center">
+        <Loader2 size={24} className="text-primary/60 animate-spin mb-2" />
+        <span className="text-xs text-gray-500 font-medium tracking-wide">
+          Loading interactive map…
+        </span>
+      </div>
+    ),
+  }
+);
 
 export default function StepLocation({ data, updateField, errors }: StepProps) {
   const districts = getDistrictNames();
@@ -75,29 +91,16 @@ export default function StepLocation({ data, updateField, errors }: StepProps) {
           </div>
         </div>
 
-        {/* Right — Map Placeholder */}
+        {/* Right — Interactive Land Location Picker */}
         <div>
           <label className="block text-[13px] font-semibold text-foreground mb-2">
             Pin Location <span className="text-gray-400 font-normal">(optional)</span>
           </label>
-          <div className="relative w-full h-[280px] rounded-xl border-2 border-dashed border-gray-200 bg-surface-alt flex flex-col items-center justify-center overflow-hidden group hover:border-gray-300 transition-colors">
-            {/* Grid pattern background */}
-            <div
-              className="absolute inset-0 opacity-[0.04]"
-              style={{
-                backgroundImage: 'linear-gradient(#0E2115 1px, transparent 1px), linear-gradient(90deg, #0E2115 1px, transparent 1px)',
-                backgroundSize: '24px 24px',
-              }}
-            />
-
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-primary/5 flex items-center justify-center mb-4">
-                <MapPin size={26} className="text-primary/40" />
-              </div>
-              <p className="text-[14px] font-semibold text-foreground/60 mb-1">Map Integration</p>
-              <p className="text-[12px] text-gray-400">Interactive map coming soon</p>
-            </div>
-          </div>
+          <LandLocationPicker
+            value={data.mapLocation}
+            district={data.district}
+            onChange={(loc) => updateField('mapLocation', loc)}
+          />
           <p className="text-[11px] text-gray-400 mt-2">
             Your exact location will not be shared publicly. It helps us identify nearby opportunities.
           </p>

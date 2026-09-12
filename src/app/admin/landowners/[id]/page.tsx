@@ -23,9 +23,23 @@ import {
   RefreshCw,
   Loader2,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { LandownerStatus } from '@/lib/adminData';
 import CustomSelect from '@/components/opportunities/CustomSelect';
+
+const LandLocationViewer = dynamic(
+  () => import('@/components/maps/LandLocationViewer'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[200px] rounded-xl border border-gray-200 bg-surface-alt flex flex-col items-center justify-center">
+        <Loader2 size={20} className="text-primary/60 animate-spin mb-2" />
+        <span className="text-xs text-gray-500 font-medium">Loading map preview…</span>
+      </div>
+    ),
+  }
+);
 
 interface DocumentItem {
   id: string;
@@ -58,6 +72,8 @@ interface LandownerData {
   locality: string;
   approximateArea: number;
   areaUnit: string;
+  latitude?: number | null;
+  longitude?: number | null;
   ownershipStatus: string;
   poolingInterest: string;
   verificationStatus: string;
@@ -66,6 +82,11 @@ interface LandownerData {
   updatedAt: string;
   documents: DocumentItem[];
   adminNotes: AdminNoteItem[];
+  parcels?: Array<{
+    id: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  }>;
 }
 
 interface ChecklistItem {
@@ -644,6 +665,32 @@ export default function LandownerDetailPage() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Pinned Land Location Map Card (Requirement 13 & 14) */}
+            <div className="bg-white rounded-[16px] p-5 border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-4">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
+                <h3 className="text-[14px] font-bold text-foreground flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-accent" />
+                  Pinned Land Location
+                </h3>
+                {(lead.latitude ?? lead.parcels?.[0]?.latitude) ? (
+                  <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    GPS Coordinates Available
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
+                    Optional Pin Not Provided
+                  </span>
+                )}
+              </div>
+
+              <LandLocationViewer
+                latitude={lead.latitude ?? lead.parcels?.[0]?.latitude}
+                longitude={lead.longitude ?? lead.parcels?.[0]?.longitude}
+                locality={lead.locality}
+                district={lead.district}
+              />
             </div>
 
             {/* Stated Interest & Quick Checklist Status Card */}

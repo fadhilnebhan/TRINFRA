@@ -63,6 +63,10 @@ export default function StepReview({ data, updateField, errors, onGoToStep }: St
         { label: 'District', value: data.district || '—' },
         { label: 'Local Body', value: data.localBody || '—' },
         { label: 'Locality', value: data.locality || '—' },
+        {
+          label: 'Pin Location',
+          value: data.mapLocation ? '✓ Location provided' : 'Not provided (Optional)',
+        },
       ],
     },
     {

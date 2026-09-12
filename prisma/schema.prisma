@@ -38,6 +38,8 @@ model Landowner {
   address                String?
   approximateArea        Float       @default(0)
   areaUnit               String      @default("Acres") // Acres | Cents | Hectares
+  latitude               Float?
+  longitude              Float?
   ownershipStatus        String      @default("Sole Ownership") // Sole Ownership | Joint Ownership | Family Inherited | Community
   poolingInterest        String      @default("Join Existing Pool") // Join Existing Pool | Initiate New Pool | Explore Options
   verificationStatus     String      @default("NEW") // NEW | VERIFICATION_PENDING | VERIFIED | NEEDS_CLARIFICATION | REJECTED
