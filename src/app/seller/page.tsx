@@ -160,7 +160,7 @@ export default function SellerDashboardPage() {
 
       {/* ================= TOP SELLER BAR ================= */}
       <div className="bg-white border-b border-gray-200/80 py-5 sm:py-6">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-bold text-lg shadow-xs shrink-0">

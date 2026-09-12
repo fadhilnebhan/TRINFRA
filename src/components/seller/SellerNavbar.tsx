@@ -80,7 +80,7 @@ export default function SellerNavbar({ sellerName, companyName }: SellerNavbarPr
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-gray-200/90 shadow-2xs">
-      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16">
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
         <div className="flex items-center justify-between h-16 sm:h-18">
           {/* Brand & Logo */}
           <div className="flex items-center gap-3">
@@ -111,7 +111,7 @@ export default function SellerNavbar({ sellerName, companyName }: SellerNavbarPr
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2" aria-label="Seller Navigation">
+          <nav className="hidden lg:flex items-center gap-1.5 lg:gap-2" aria-label="Seller Navigation">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -138,7 +138,7 @@ export default function SellerNavbar({ sellerName, companyName }: SellerNavbarPr
           </nav>
 
           {/* Desktop User Info & Sign Out */}
-          <div className="hidden md:flex items-center gap-3 border-l border-gray-200/80 pl-4">
+          <div className="hidden lg:flex items-center gap-3 border-l border-gray-200/80 pl-4">
             <div className="text-right">
               <p className="text-xs font-bold text-gray-900 leading-tight truncate max-w-[160px]">
                 {displayName}
@@ -158,8 +158,8 @@ export default function SellerNavbar({ sellerName, companyName }: SellerNavbarPr
             </button>
           </div>
 
-          {/* Mobile Hamburger Toggle */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile/Tablet Hamburger Toggle */}
+          <div className="flex lg:hidden items-center gap-2">
             <Link
               href="/seller/listings/new"
               className="inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-accent text-white shadow-2xs"
@@ -180,9 +180,9 @@ export default function SellerNavbar({ sellerName, companyName }: SellerNavbarPr
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile/Tablet Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200/90 bg-white px-4 pt-3 pb-5 space-y-3 shadow-lg animate-in slide-in-from-top-2 duration-150">
+        <div className="lg:hidden border-t border-gray-200/90 bg-white px-4 pt-3 pb-5 space-y-3 shadow-lg animate-in slide-in-from-top-2 duration-150">
           <div className="px-2 py-2 bg-gray-50 rounded-xl flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs">
               <UserCheck size={16} />

@@ -179,7 +179,7 @@ export default function SellerEnquiriesPage() {
       <SellerNavbar />
 
       <main className="flex-grow pb-20 pt-5 sm:pt-7">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-12 lg:px-16">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
           {/* Breadcrumb / Back Link below Header */}
           <div className="mb-4">
             <Link
@@ -192,7 +192,7 @@ export default function SellerEnquiriesPage() {
           </div>
 
           {/* Page Heading & Filters */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-xl sm:text-2xl font-heading font-extrabold text-gray-900 tracking-tight">
                 Buyer Enquiries
@@ -203,7 +203,7 @@ export default function SellerEnquiriesPage() {
             </div>
 
             {/* Status Filter Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+            <div className="flex flex-wrap items-center gap-1.5 pb-1">
               {[
                 { id: 'ALL', label: 'All', count: enquiries.length },
                 { id: 'NEW', label: 'New', count: newCount },
