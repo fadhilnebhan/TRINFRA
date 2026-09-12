@@ -32,10 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  return {
-    title: 'Project Not Found | TRINFRA',
-    description: 'The requested project could not be found.',
-  };
+  notFound();
 }
 
 export default async function ProjectDetailPage({ params }: PageProps) {

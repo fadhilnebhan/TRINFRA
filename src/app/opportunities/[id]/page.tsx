@@ -18,10 +18,7 @@ export const revalidate = 0;
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const opp = await getPublicOpportunityByIdOrSlug(params.id);
   if (!opp) {
-    return {
-      title: 'Opportunity Not Found | Trinfra',
-      description: 'The requested land opportunity could not be found.',
-    };
+    notFound();
   }
 
   return {

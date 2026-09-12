@@ -15,9 +15,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const listing = await getPublicResidentialListingBySlugOrId(params.slug);
   if (!listing) {
-    return {
-      title: 'Property Not Found | TRINFRA',
-    };
+    notFound();
   }
 
   return {
