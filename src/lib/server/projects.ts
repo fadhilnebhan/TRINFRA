@@ -92,7 +92,11 @@ export function formatPublicProject(proj: {
 export async function getPublicProjects(): Promise<Project[]> {
   try {
     const projects = await prisma.project.findMany({
-      include: { opportunity: true },
+      include: {
+        opportunity: {
+          select: { id: true, title: true, slug: true, status: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
     return projects.map(formatPublicProject);
@@ -114,7 +118,9 @@ export async function getPublicProjectByIdOrSlug(idOrSlug: string): Promise<Proj
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
       },
       include: {
-        opportunity: true,
+        opportunity: {
+          select: { id: true, title: true, slug: true, status: true },
+        },
       },
     });
     if (!proj) return null;

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useTransition } from 'react';
+import React, { useState, useEffect, useCallback, useTransition, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { Search, Home, Building2, ChevronRight, Compass, Sparkles } from 'lucide-react';
@@ -121,8 +121,14 @@ export default function ResidentialPage({
     }
   }, [selectedDistrict, debouncedSearch, filters, page, isSelectedDistrictEmpty]);
 
-  // Fetch on parameter change
+  const isFirstMount = useRef(true);
+
+  // Fetch on parameter change (skip on initial mount since SSR provides authoritative listings)
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     fetchListings();
   }, [fetchListings]);
 

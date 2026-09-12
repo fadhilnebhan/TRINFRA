@@ -69,7 +69,7 @@ export default function OpportunitiesPage({
 
   useLiveDataSync<Opportunity[]>({
     initialData: initialOpportunities || null,
-    runOnMount: true,
+    runOnMount: false,
     fetcher: async (signal) => {
       const res = await fetch('/api/opportunities', {
         cache: 'no-store',

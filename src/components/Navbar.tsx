@@ -122,6 +122,7 @@ export default function Navbar() {
                 (link.name === 'Projects' && pathname?.startsWith('/projects')) ||
                 (link.name === 'How It Works' && pathname === '/how-it-works') ||
                 (link.name === 'About' && pathname === '/about') ||
+                (link.name === 'Residential' && pathname?.startsWith('/residential')) ||
                 (link.name === 'Knowledge Centre' && pathname?.startsWith('/knowledge-centre')) ||
                 (link.name === 'Opportunities' && pathname?.startsWith('/opportunities'));
 
@@ -129,6 +130,7 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
+                  prefetch={!link.href.startsWith('/#')}
                   className={`transition-colors text-[13px] tracking-wide relative py-1 ${
                     isActive
                       ? 'text-accent font-bold after:content-[""] after:absolute after:-bottom-1.5 after:left-0 after:right-0 after:h-[2px] after:bg-accent'
@@ -204,6 +206,7 @@ export default function Navbar() {
                 (link.name === 'Projects' && pathname?.startsWith('/projects')) ||
                 (link.name === 'How It Works' && pathname === '/how-it-works') ||
                 (link.name === 'About' && pathname === '/about') ||
+                (link.name === 'Residential' && pathname?.startsWith('/residential')) ||
                 (link.name === 'Knowledge Centre' && pathname?.startsWith('/knowledge-centre')) ||
                 (link.name === 'Opportunities' && pathname?.startsWith('/opportunities')) ||
                 (link.name === 'Landowners' && (pathname === '/register' || pathname === '/register-your-land')) ||
@@ -213,6 +216,7 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
+                  prefetch={!link.href.startsWith('/#')}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`text-[15px] py-2.5 px-3 rounded-md transition-all flex items-center justify-between ${
                     isActive

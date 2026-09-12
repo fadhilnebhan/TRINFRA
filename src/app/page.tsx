@@ -10,8 +10,7 @@ import FinalCta from '@/components/FinalCta';
 import Footer from '@/components/Footer';
 import { getPublicOpportunities } from '@/lib/server/opportunities';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function Home() {
   const opportunities = await getPublicOpportunities();

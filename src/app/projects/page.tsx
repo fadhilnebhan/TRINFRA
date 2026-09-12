@@ -4,8 +4,7 @@ import Footer from '@/components/Footer';
 import ProjectsPageView from '@/components/projects/ProjectsPageView';
 import { getPublicProjects } from '@/lib/server/projects';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Projects | TRINFRA',

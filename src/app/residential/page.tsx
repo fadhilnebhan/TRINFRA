@@ -2,8 +2,7 @@ import { Metadata } from 'next';
 import { getDistrictPropertyCounts, getPublicResidentialListings } from '@/lib/server/residential';
 import ResidentialPage from '@/components/residential/ResidentialPage';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 interface PageProps {
   searchParams: {

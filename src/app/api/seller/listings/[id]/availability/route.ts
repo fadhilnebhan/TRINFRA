@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedSeller } from '@/lib/auth';
 
@@ -69,6 +70,13 @@ export async function PATCH(
         ...(status === 'PUBLISHED' && !existing.status ? { publishedAt: new Date() } : {}),
       },
     });
+
+    try {
+      revalidatePath('/residential');
+      revalidatePath('/');
+    } catch (e) {
+      console.warn('revalidatePath error:', e);
+    }
 
     return NextResponse.json({
       success: true,

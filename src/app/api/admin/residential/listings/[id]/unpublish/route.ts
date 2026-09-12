@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedAdmin } from '@/lib/auth';
 
@@ -28,6 +29,14 @@ export async function POST(
         status: 'UNPUBLISHED',
       },
     });
+
+    try {
+      revalidatePath('/residential');
+      revalidatePath(`/residential/${updated.slug}`);
+      revalidatePath('/');
+    } catch (e) {
+      console.warn('revalidatePath error:', e);
+    }
 
     // Notify seller
     try {

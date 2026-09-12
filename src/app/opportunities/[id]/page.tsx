@@ -12,8 +12,7 @@ interface PageProps {
   params: { id: string };
 }
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const opp = await getPublicOpportunityByIdOrSlug(params.id);
@@ -31,13 +30,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function OpportunityPage({ params }: PageProps) {
-  const opp = await getPublicOpportunityByIdOrSlug(params.id);
+  const [opp, allOpps] = await Promise.all([
+    getPublicOpportunityByIdOrSlug(params.id),
+    getPublicOpportunities(),
+  ]);
 
   if (!opp) {
     notFound();
   }
 
-  const allOpps = await getPublicOpportunities();
   const relatedOpps = allOpps.filter((o) => o.id !== opp.id).slice(0, 3);
 
   return (

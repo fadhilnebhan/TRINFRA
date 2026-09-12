@@ -102,6 +102,7 @@ model Opportunity {
   enquiries  DeveloperEnquiry[]
   adminNotes AdminNote[]
 
+  @@index([status, isPinned, pinnedAt])
   @@index([isPinned, pinnedAt])
 }
 
@@ -129,6 +130,10 @@ model Project {
 
   enquiries  DeveloperEnquiry[]
   adminNotes AdminNote[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([opportunityId])
 }
 
 model DeveloperEnquiry {
@@ -249,6 +254,7 @@ model ResidentialListing {
   @@index([price])
   @@index([bedrooms])
   @@index([status, createdAt])
+  @@index([status, publishedAt])
 }
 
 model ResidentialImage {

@@ -4,8 +4,7 @@ import Footer from '@/components/Footer';
 import OpportunitiesPage from '@/components/opportunities/OpportunitiesPage';
 import { getPublicOpportunities } from '@/lib/server/opportunities';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Opportunities | Trinfra — Land-Pooling & Development Facilitation',
